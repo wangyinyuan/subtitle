@@ -1,0 +1,22 @@
+{
+    "short_name": "字幕",
+    "name": "字幕 大屏显示歌曲歌词",
+    "icons": [
+      {
+        "src": "/icon/icon.svg",
+        "type": "image/svg+xml",
+        "sizes": "512x512",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "/icon/icon.png",
+        "type": "image/png",
+        "sizes": "838x838",
+        "purpose": "any maskable"
+      }
+    ],
+    "background_color": "#3367D6",
+    "display": "fullscreen",
+    "theme_color": "#ffffff",
+    "description": "字幕 大屏显示歌曲歌词"
+  }
