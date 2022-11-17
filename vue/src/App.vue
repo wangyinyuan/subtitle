@@ -1,7 +1,7 @@
 <script>
-console.log('建立本站初衷是为了庆祝元旦晚会时有歌词放，但我认为无论有没有歌词都是一种美好回忆。试想一下，两年后我们坐在中考考场里，是否还会回忆起那年的欢声笑语？\n\n望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
+console.log('建立本站初衷是为了庆祝元旦晚会时有歌词放，多想记录下这美好回忆。试想一下，两年后我们坐在中考考场里，是否还会回忆起那年的欢声笑语？\n\n望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
 async function api(name, parm) {
-    let out = {};
+    let out = {}
     // await fetch('http://localhost:3000/api/' + name, {
     await fetch('/api/' + name, {
         method: "POST",
@@ -9,9 +9,7 @@ async function api(name, parm) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify(parm)
-    }).then(response => response.json()).then(data => {
-        out = data
-    })
+    }).then(response => response.json()).then(data => out=data);
     return out;
 }
 
@@ -37,18 +35,17 @@ export default {
             }
         },
         async subtitle(row) {
-            let lyric = await api('lyric', { id: row.id })
-            if (lyric.status === 200) {
+            const promiseLyric = api('lyric', { id: row.id })
+            const promiseSongURL = api('songURL', { id: row.id })
+            const [lyric, songURL] = await Promise.all([promiseLyric, promiseSongURL])            
+            if (songURL.status === 200 && lyric.status === 200) {
                 this.lyric = lyric.body.lrc.lyric;
                 this.parsedLyric = this.parseLyric;
+                this.songURL = songURL.body.data[0].url.split(':').join('s:')
             }
-            let songURL = await api('songURL', { id: row.id })
-            if (songURL.status === 200) {
-                let url = songURL.body.data[0].url.split(':')
-                url[0] += 's';
-                this.songURL = url.join(':')
-            }
+
             let dom = document.getElementById('music');
+            // 全屏
             dom.onplay = () => {
                 if (document.documentElement.RequestFullScreen) {
                     document.documentElement.RequestFullScreen();
@@ -63,19 +60,20 @@ export default {
                     document.documentElement.msRequestFullscreen();
                 }
             }
+            // 取消全屏
             dom.onpause = () => {
                 if (document.exitFullScreen) {
                     document.exitFullscreen()
                 }
-                //兼容火狐
+                //火狐
                 if (document.mozCancelFullScreen) {
                     document.mozCancelFullScreen()
                 }
-                //兼容谷歌
+                //谷歌
                 if (document.webkitExitFullscreen) {
                     document.webkitExitFullscreen()
                 }
-                //兼容IE
+                //IE
                 if (document.msExitFullscreen) {
                     document.msExitFullscreen()
                 }
@@ -181,8 +179,9 @@ export default {
                 <el-link href="https://www.12377.cn/" target="_blank">中国互联网违法和不良信息举报中心</el-link>
             </p>
             <p class="footerP">
-                Made with <span style="color:red;">♥</span> in Qingdao
+                来自青岛，用<span style="color:red;">♥</span>制作
             </p>
+            <p class="footerP fontHint">字体使用 方正清刻本悦宋</p>
         </footer>
     </div>
     <div class="play" v-show="play">
@@ -203,6 +202,11 @@ footer {
 
 .footerP {
     margin: 0;
+}
+
+.fontHint {
+    font-family: fangzhengsong;
+    font-weight: inherit;
 }
 
 .playFooter {

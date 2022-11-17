@@ -3,6 +3,7 @@
 @font-face {
     font-family: fangzhengsong;
     src: url('/font/font.woff2'),
+         url('/font/font.woff'),
          url('/font/font.ttf');
     font-display: swap;
 }
