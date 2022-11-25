@@ -2,8 +2,8 @@
 console.log('建立本站初衷是为了庆祝元旦晚会时有歌词放，多想记录下这美好回忆。试想一下，两年后我们坐在中考考场里，是否还会回忆起那年的欢声笑语？\n\n望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
 async function api(name, parm) {
     let out = {}
-    // await fetch('http://localhost:3000/api/' + name, {
-    await fetch('/api/' + name, {
+    await fetch('http://localhost:3000/api/' + name, {
+    // await fetch('/api/' + name, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -17,6 +17,7 @@ export default {
     data() {
         return {
             searchData: [],
+            searchTableShow: 0,
             lyric: '',
             parsedLyric: [],
             songURL: '',
@@ -28,9 +29,10 @@ export default {
     methods: {
         async search() {
             if (this.searchInput) {
-                let data = await api('search', { keywords: this.searchInput })
+                const data = await api('search', { keywords: this.searchInput });
                 if (data.status === 200) {
-                    this.searchData = data.body.result.songs
+                    this.searchTableShow = 1;
+                    this.searchData = data.body.result.songs?data.body.result.songs:[];
                 }
             }
         },
@@ -102,7 +104,7 @@ export default {
     computed: {
         singers() {
             let out = [];
-            let singers = this.searchData
+            const singers = this.searchData
             singers.forEach((song, songIndex) => {
                 song.artists.forEach((singer, singerIndex, arr) => {
                     if (out[songIndex] === undefined) {
@@ -115,25 +117,26 @@ export default {
         },
         parseLyric() {
             function parseLyricLine(line) {
-                const lyricExp = /^\[(\d*):(\d*).(\d*)\](.*)/
+                const lyricExp = /^\[(\d*):(\d*).(\d*)\](.*)/;
                 let result;
                 if ((result = line.match(lyricExp)) !== null) {
                     return {
+                        //转换时间和audio.currentTime相同
                         time: +result[1] * 60 + +result[2] + +result[3] / 1000,
                         lyric: result[4].trim()
                     }
                 }
             }
-            let lyric = this.lyric
+            const lyric = this.lyric;
 
-            const lrcObj = []
+            const lrcObj = [];
             const lrcArr = lyric.split("\n").filter(value => {
                 // 1.通过回车去分割歌词每一行,遍历数组，去除空行空格
                 return value.trim() !== ''
             }).map(value => {
                 // 2.解析歌词
-                const line = parseLyricLine(value.trim())
-                lrcObj.push(line)
+                const line = parseLyricLine(value.trim());
+                lrcObj.push(line);
                 return value.trim();
             })
             return lrcObj;
@@ -151,8 +154,8 @@ export default {
                 @keyup.enter.native="search" />
             <el-button size="large" @click="search">搜索</el-button>
         </div>
-        <div class="searchData" v-if="searchData.length">
-            <el-table class="searchDataTable" :data="searchData" @row-click="subtitle" stripe>
+        <div class="searchData" v-if="searchTableShow">
+            <el-table class="searchDataTable" :data="searchData" @row-click="subtitle" empty-text="无歌曲" stripe>
                 <el-table-column prop="name" label="歌名" />
                 <el-table-column label="歌手">
                     <template #default="scope">

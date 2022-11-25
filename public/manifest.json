@@ -15,7 +15,7 @@
         "purpose": "any maskable"
       }
     ],
-    "background_color": "#3367D6",
+    "background_color": "#ffffff",
     "display": "fullscreen",
     "theme_color": "#ffffff",
     "description": "字幕 大屏显示歌曲歌词"
