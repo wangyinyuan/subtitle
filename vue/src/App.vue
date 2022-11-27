@@ -392,6 +392,7 @@ footer {
     padding: 0;
     margin: 0;
     backdrop-filter: blur(200px);
+    -webkit-backdrop-filter: blur(200px);
     top: 0;
     left: 0;
 }
