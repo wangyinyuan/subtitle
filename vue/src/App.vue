@@ -390,7 +390,7 @@ footer {
     margin: 0;
     padding: 0;
     position: relative;
-    filter: blur(200px);
+    filter: blur(100px);
     transform: scale(1.2);
 }
 
