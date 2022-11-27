@@ -2,7 +2,7 @@
 console.log('建立本站初衷是为了庆祝元旦晚会时有歌词放，多想记录下这美好回忆。试想一下，两年后我们坐在中考考场里，是否还会回忆起那年的欢声笑语？\n\n望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
 async function api(name, parm) {
     let out = {}
-    // await fetch('http://localhost:3000/api/' + name, {
+    //await fetch('http://localhost:3000/api/' + name, {
     await fetch('/api/' + name, {
         method: "POST",
         headers: {
@@ -306,7 +306,6 @@ export default {
             left:${colorBackgroundImage(i).left};
             top:${colorBackgroundImage(i).top}`" />
         </div>
-        <div class="colorBackgroundCover"></div>
     </div>
     <div class="blackBackground background" v-show="play && !colorBackgroundVisible"></div>
     <div class="play" v-show="play">
@@ -385,26 +384,21 @@ footer {
     }
 }
 
-.colorBackgroundCover {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    margin: 0;
-    backdrop-filter: blur(200px);
-    -webkit-backdrop-filter: blur(200px);
-    -moz-backdrop-filter: blur(200px);
-    -ms-backdrop-filter: blur(200px);
-    top: 0;
-    left: 0;
-}
-
 .colorBackgroundContainer {
     width: 100%;
     height: 100%;
     margin: 0;
     padding: 0;
     position: relative;
+    filter: blur(200px);
+    transform: scale(1.2);
+}
+
+.colorBackground {
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
     overflow: hidden;
 }
 
