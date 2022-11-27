@@ -2,8 +2,8 @@
 console.log('建立本站初衷是为了庆祝元旦晚会时有歌词放，多想记录下这美好回忆。试想一下，两年后我们坐在中考考场里，是否还会回忆起那年的欢声笑语？\n\n望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
 async function api(name, parm) {
     let out = {}
-    await fetch('http://localhost:3000/api/' + name, {
-        // await fetch('/api/' + name, {
+    // await fetch('http://localhost:3000/api/' + name, {
+    await fetch('/api/' + name, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
