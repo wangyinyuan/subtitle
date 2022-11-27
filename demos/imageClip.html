@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+        .container {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .bgimage {
+            position: absolute;
+            transition: linear;
+            animation: rotate 150s infinite linear;
+        }
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .cover {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            backdrop-filter: blur(200px);
+            top:0;
+            left: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <img class="bgimage" src="">
+        <img class="bgimage" src="">
+        <img class="bgimage" src="">
+        <img class="bgimage" src="">
+    </div>
+    <div class="cover"></div>
+    <script>
+        let screenWidth = document.body.offsetWidth;
+        let screenHeight = document.body.offsetHeight;
+        let images = [];
+        class SplitImage {
+            constructor(options) {
+                this.options = options
+                this.input = null
+                this.canvas = null
+                this.ctx = null
+                this.img = null
+                this.init()
+            }
+            init() {
+                this.canvas = document.createElement('canvas')
+                this.ctx = this.canvas.getContext('2d')
+                this.createImg(this.options.base64)
+            }
+            createImg(base64) { // 加载图片
+                return new Promise((resolve, reject) => {
+                    const img = new Image()
+                    img.src = base64
+                    img.onload = () => {
+                        this.img = img
+                        this.splitImg()
+                        resolve()
+                    }
+                    img.onerror = (e) => {
+                        console.log(e)
+                        reject(e)
+                    }
+                })
+            }
+            drawImg(options = {}) { // 绘制图片
+                this.canvas.width = options.width
+                this.canvas.height = options.height
+                this.ctx.drawImage(this.img, options.x, options.y, options.width, options.height, 0, 0, options.width, options.height)
+                const base64 = this.canvas.toDataURL()
+                images.push(base64)
+            }
+            splitImg() {
+                let list = []
+                for (let y = 0; y < this.options.row; y++) {
+                    for (let x = 0; x < this.options.col; x++) {
+                        let simpleWidth = parseInt(this.img.width / this.options.col)
+                        let simpleHeight = parseInt(this.img.height / this.options.row)
+                        list.push({
+                            x: x * simpleWidth,
+                            y: y * simpleHeight,
+                            width: simpleWidth,
+                            height: simpleHeight
+                        })
+                    }
+                }
+                list.forEach(item => {
+                    this.drawImg(item)
+                })
+                this.flash()
+            }
+            flash(){
+                let a = Math.max(screenHeight, screenWidth) / 2
+                let A = Math.sqrt(Math.max(screenHeight, screenWidth) ** 2 / 2)
+                let ele = Array.from(document.getElementsByClassName('bgimage'))
+                ele.forEach((e, i)=>{
+                    e.width = e.height =A;
+                    e.src = images[i];
+                    let zuobiao = i.toString(2).length==1?'0'+i.toString(2):i.toString(2);
+                    e.style.left = `${-((A-a)/2) + parseInt(zuobiao[1])*a}px`;
+                    e.style.top = `${-((A-a)/2) + parseInt(zuobiao[0])*a}px`;
+                })
+            }
+        }
+        const background = async (url) => {
+            const img = new Image();
+            img.src = url;
+            let output;
+            img.setAttribute("crossOrigin",'Anonymous')
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                const base64 = canvas.toDataURL('image/jpeg');
+                let splitImage = new SplitImage({
+                    row: 2,
+                    col: 2,
+                    base64
+                })
+            }
+        }
+        background('https://p2.music.126.net/SIVCr4FhcqiTmNhuVzccEQ==/109951166656400800.jpg')
+
+    </script>
+</body>
+
+</html>

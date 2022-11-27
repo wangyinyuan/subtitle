@@ -1,10 +1,12 @@
 const express = require("express");
 const path = require("path")
-const { search, lyric, song_url_v1 } = require('NeteaseCloudMusicApi');
+const cors = require("cors")
+const { search, lyric, song_url_v1, album } = require('NeteaseCloudMusicApi');
 const app = express();
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '/public')));
+app.use(cors());
 
 const port = 3000;
 
@@ -21,7 +23,7 @@ app.post('/api/search', async (req, res) => {
         })
         res.json(result)
     } catch (error) {
-        console.error(error)
+        res.json(error)
     }
 })
 
@@ -32,7 +34,7 @@ app.post('/api/lyric', async (req, res) => {
         })
         res.json(result)
     } catch (error) {
-        console.error(error)
+        res.json(error)
     }
 })
 
@@ -44,7 +46,18 @@ app.post('/api/songURL', async (req, res) => {
         })
         res.json(result)
     } catch (error) {
-        console.error(error)
+        res.json(error)
+    }
+})
+
+app.post('/api/album', async (req, res) => {
+    try {
+        const result = await album({
+            id: req.body.id
+        })
+        res.json(result)
+    } catch (error) {
+        res.json(error)
     }
 })
 
