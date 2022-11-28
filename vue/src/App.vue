@@ -397,7 +397,7 @@ footer {
     margin: 0;
     padding: 0;
     position: relative;
-    filter: blur(100px);
+    filter: blur(90px);
     transform: scale(1.2);
 }
 
