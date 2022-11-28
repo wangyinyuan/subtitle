@@ -1,8 +1,8 @@
 <script>
-console.log('建立本站初衷是为了庆祝元旦晚会时有歌词放，多想记录下这美好回忆。试想一下，两年后我们坐在中考考场里，是否还会回忆起那年的欢声笑语？\n\n望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
+console.log('望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
 async function api(name, parm) {
     let out = {}
-    //await fetch('http://localhost:3000/api/' + name, {
+    // await fetch('http://localhost:3000/api/' + name, {
     await fetch('/api/' + name, {
         method: "POST",
         headers: {
@@ -314,11 +314,8 @@ export default {
         </div>
         <div class="playFooter">
             <el-button size="large" round @click="back">返回</el-button>
-            <div style="width:2vw"></div>
             <audio id="music" :src="songURL" controls preload="auto" :ontimeupdate="setMusicTime" />
-            <div style="width:2vw"></div>
-            <el-switch v-model="colorBackgroundVisible" size="large" active-text="彩色背景" inactive-text="黑色背景"
-                style="background-color:white;border-radius:15px;padding-right:15px;padding-left: 15px;" />
+            <el-switch class="colorSwitch" v-model="colorBackgroundVisible" size="large" active-text="彩色背景" inactive-text="黑色背景" />
         </div>
     </div>
 </template>
@@ -341,6 +338,16 @@ footer {
     bottom: 1vw;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2vw;
+}
+
+.colorSwitch {
+    background-color: white;
+    border-radius: 15px;
+    padding-right: 15px;
+    padding-left: 15px;
 }
 
 .lyricList {
