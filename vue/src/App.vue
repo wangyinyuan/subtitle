@@ -24,7 +24,9 @@ export default {
             searchInput: undefined,
             play: 0,
             musicTime: 0,
-            colorBackgroundVisible: 0
+            colorBackgroundVisible: 0,
+            images: [],
+            colorBackgroundImage: []
         }
     },
     methods: {
@@ -47,8 +49,7 @@ export default {
                 this.parsedLyric = this.parseLyric;
                 this.songURL = songURL.body.data[0].url.split(':').join('s:')
                 let albumCover = album.body.songs[0].al.picUrl;
-
-                let images = [];
+                let that = this;
                 class SplitImage {
                     constructor(options) {
                         this.options = options
@@ -83,7 +84,7 @@ export default {
                         this.canvas.height = options.height
                         this.ctx.drawImage(this.img, options.x, options.y, options.width, options.height, 0, 0, options.width, options.height)
                         const base64 = this.canvas.toDataURL()
-                        images.push(base64)
+                        that.images.push(base64)
                     }
                     splitImg() {
                         let list = []
@@ -99,16 +100,22 @@ export default {
                                 })
                             }
                         }
+                        that.images=[]
                         list.forEach(item => {
                             this.drawImg(item)
                         })
-                        this.flash()
-                    }
-                    flash() {
-                        let ele = Array.from(document.getElementsByClassName('colorBackgroundImage'))
-                        ele.forEach((e, i) => {
-                            e.src = images[i];
-                        })
+                        // 初始left top size
+                        let output = []
+                        for (let i = 0; i < that.images.length; i++) {
+                            let a = Math.max(that.screenHeight, that.screenWidth) / 2
+                            let A = Math.sqrt(Math.max(that.screenHeight, that.screenWidth) ** 2 / 2)
+                            let zuobiao = i.toString(2).length == 1 ? '0' + i.toString(2) : i.toString(2);
+                            let left = `${-((A - a) / 2) + parseInt(zuobiao[1]) * a}px`;
+                            let top = `${-((A - a) / 2) + parseInt(zuobiao[0]) * a}px`;
+                            let size = `${Math.sqrt(Math.max(that.screenHeight, that.screenWidth) ** 2 / 2)}px`
+                            output.push({ left, top, size })
+                        }
+                        that.colorBackgroundImage = output;
                     }
                 }
                 const background = async (url) => {
@@ -133,8 +140,11 @@ export default {
             }
 
             let dom = document.getElementById('music');
-            // 全屏
             dom.onplay = () => {
+                for(let i=0;i<document.getElementsByClassName('colorBackgroundImage').length;i++){
+                    document.getElementsByClassName('colorBackgroundImage')[i].style.animationPlayState='running'
+                }
+                // 全屏
                 if (document.documentElement.RequestFullScreen) {
                     document.documentElement.RequestFullScreen();
                 }
@@ -148,8 +158,11 @@ export default {
                     document.documentElement.msRequestFullscreen();
                 }
             }
-            // 取消全屏
             dom.onpause = () => {
+                for(let i=0;i<document.getElementsByClassName('colorBackgroundImage').length;i++){
+                    document.getElementsByClassName('colorBackgroundImage')[i].style.animationPlayState='paused'
+                }
+                // 取消全屏
                 if (document.exitFullScreen) {
                     document.exitFullscreen()
                 }
@@ -227,21 +240,6 @@ export default {
             })
             return lrcObj;
         },
-        colorBackgroundImage() {
-            return function (id) {
-                let a = Math.max(this.screenHeight, this.screenWidth) / 2
-                let A = Math.sqrt(Math.max(this.screenHeight, this.screenWidth) ** 2 / 2)
-                let zuobiao = id.toString(2).length == 1 ? '0' + id.toString(2) : id.toString(2);
-                let left = `${-((A - a) / 2) + parseInt(zuobiao[1]) * a}px`;
-                let top = `${-((A - a) / 2) + parseInt(zuobiao[0]) * a}px`;
-                let size = `${Math.sqrt(Math.max(this.screenHeight, this.screenWidth) ** 2 / 2)}px`
-                return {
-                    left,
-                    top,
-                    size
-                }
-            }
-        }
     },
     created() {
         this.screenWidth = document.body.clientWidth;
@@ -250,7 +248,18 @@ export default {
             return (() => {
                 this.screenWidth = document.body.clientWidth;
                 this.screenHeight = document.body.clientHeight;
-            })();
+                let output = []
+                for (let i = 0; i < this.images.length; i++) {
+                    let a = Math.max(this.screenHeight, this.screenWidth) / 2
+                    let A = Math.sqrt(Math.max(this.screenHeight, this.screenWidth) ** 2 / 2)
+                    let zuobiao = i.toString(2).length == 1 ? '0' + i.toString(2) : i.toString(2);
+                    let left = `${-((A - a) / 2) + parseInt(zuobiao[1]) * a}px`;
+                    let top = `${-((A - a) / 2) + parseInt(zuobiao[0]) * a}px`;
+                    let size = `${Math.sqrt(Math.max(this.screenHeight, this.screenWidth) ** 2 / 2)}px`
+                    output.push({ left, top, size })
+                }
+                this.colorBackgroundImage = output;
+            })()
         };
     }
 }
@@ -300,11 +309,11 @@ export default {
     </div>
     <div class="colorBackground background" v-show="play && colorBackgroundVisible">
         <div class="colorBackgroundContainer">
-            <img class="colorBackgroundImage" v-for="(e, i) in [0, 0, 0, 0]" :style="`
-            width:${colorBackgroundImage(i).size};
+            <img class="colorBackgroundImage" v-for="(e, i) in images" :src="e" :style="`
+            width:${colorBackgroundImage[i].size};
             aspect-ratio:1/1;
-            left:${colorBackgroundImage(i).left};
-            top:${colorBackgroundImage(i).top}`" />
+            left:${colorBackgroundImage[i].left};
+            top:${colorBackgroundImage[i].top}`" />
         </div>
     </div>
     <div class="blackBackground background" v-show="play && !colorBackgroundVisible"></div>
@@ -315,7 +324,8 @@ export default {
         <div class="playFooter">
             <el-button size="large" round @click="back">返回</el-button>
             <audio id="music" :src="songURL" controls preload="auto" :ontimeupdate="setMusicTime" />
-            <el-switch class="colorSwitch" v-model="colorBackgroundVisible" size="large" active-text="彩色背景" inactive-text="黑色背景" />
+            <el-switch class="colorSwitch" v-model="colorBackgroundVisible" size="large" active-text="彩色背景"
+                inactive-text="黑色背景" />
         </div>
     </div>
 </template>
@@ -379,6 +389,7 @@ footer {
     position: absolute;
     transition: linear;
     animation: rotate 150s infinite linear;
+    animation-play-state: paused;
 }
 
 @keyframes rotate {
@@ -398,7 +409,7 @@ footer {
     padding: 0;
     position: relative;
     filter: blur(90px);
-    transform: scale(1.2);
+    transform: scale(100%);
 }
 
 .colorBackground {
