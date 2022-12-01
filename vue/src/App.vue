@@ -25,7 +25,9 @@ export default {
             play: 0,
             musicTime: 0,
             colorBackgroundVisible: 0,
+            animationPlayState: 0,
             images: [],
+            colorImageSize: [],
             colorBackgroundImage: []
         }
     },
@@ -44,12 +46,14 @@ export default {
             const promiseLyric = api('lyric', { id: row.id })
             const promiseSongURL = api('songURL', { id: row.id })
             const [lyric, songURL, album] = await Promise.all([promiseLyric, promiseSongURL, promiseAlbum])
+
             if (songURL.status === 200 && lyric.status === 200 && album.status === 200) {
                 this.lyric = lyric.body.lrc.lyric;
                 this.parsedLyric = this.parseLyric;
                 this.songURL = songURL.body.data[0].url.split(':').join('s:')
                 let albumCover = album.body.songs[0].al.picUrl;
                 let that = this;
+
                 class SplitImage {
                     constructor(options) {
                         this.options = options
@@ -57,6 +61,8 @@ export default {
                         this.canvas = null
                         this.ctx = null
                         this.img = null
+                        this.simpleWidth = 0
+                        this.simpleHeight = 0
                         this.init()
                     }
                     init() {
@@ -79,45 +85,29 @@ export default {
                             }
                         })
                     }
-                    drawImg(options = {}) { // 绘制图片
-                        this.canvas.width = options.width
-                        this.canvas.height = options.height
-                        this.ctx.drawImage(this.img, options.x, options.y, options.width, options.height, 0, 0, options.width, options.height)
+                    drawImg(options) { // 绘制图片
+                        this.canvas.width = this.simpleWidth
+                        this.canvas.height = this.simpleHeight
+                        this.ctx.drawImage(this.img, options.x, options.y, this.simpleWidth, this.simpleHeight, 0, 0, this.simpleWidth, this.simpleHeight)
                         const base64 = this.canvas.toDataURL()
                         that.images.push(base64)
                     }
+
                     splitImg() {
-                        let list = []
+                        this.simpleWidth = parseInt(this.img.width / this.options.col)
+                        this.simpleHeight = parseInt(this.img.height / this.options.row)
+                        that.images=[]
                         for (let y = 0; y < this.options.row; y++) {
                             for (let x = 0; x < this.options.col; x++) {
-                                let simpleWidth = parseInt(this.img.width / this.options.col)
-                                let simpleHeight = parseInt(this.img.height / this.options.row)
-                                list.push({
-                                    x: x * simpleWidth,
-                                    y: y * simpleHeight,
-                                    width: simpleWidth,
-                                    height: simpleHeight
+                                this.drawImg({
+                                    x: x * this.simpleWidth,
+                                    y: y * this.simpleHeight,
                                 })
                             }
                         }
-                        that.images=[]
-                        list.forEach(item => {
-                            this.drawImg(item)
-                        })
-                        // 初始left top size
-                        let output = []
-                        for (let i = 0; i < that.images.length; i++) {
-                            let a = Math.max(that.screenHeight, that.screenWidth) / 2
-                            let A = Math.sqrt(Math.max(that.screenHeight, that.screenWidth) ** 2 / 2)
-                            let zuobiao = i.toString(2).length == 1 ? '0' + i.toString(2) : i.toString(2);
-                            let left = `${-((A - a) / 2) + parseInt(zuobiao[1]) * a}px`;
-                            let top = `${-((A - a) / 2) + parseInt(zuobiao[0]) * a}px`;
-                            let size = `${Math.sqrt(Math.max(that.screenHeight, that.screenWidth) ** 2 / 2)}px`
-                            output.push({ left, top, size })
-                        }
-                        that.colorBackgroundImage = output;
                     }
                 }
+
                 const background = async (url) => {
                     const img = new Image();
                     img.src = url;
@@ -136,14 +126,12 @@ export default {
                         })
                     }
                 }
+
                 background(albumCover)
             }
-
             let dom = document.getElementById('music');
             dom.onplay = () => {
-                for(let i=0;i<document.getElementsByClassName('colorBackgroundImage').length;i++){
-                    document.getElementsByClassName('colorBackgroundImage')[i].style.animationPlayState='running'
-                }
+                this.animationPlayState = 1
                 // 全屏
                 if (document.documentElement.RequestFullScreen) {
                     document.documentElement.RequestFullScreen();
@@ -159,9 +147,7 @@ export default {
                 }
             }
             dom.onpause = () => {
-                for(let i=0;i<document.getElementsByClassName('colorBackgroundImage').length;i++){
-                    document.getElementsByClassName('colorBackgroundImage')[i].style.animationPlayState='paused'
-                }
+                this.animationPlayState = 0
                 // 取消全屏
                 if (document.exitFullScreen) {
                     document.exitFullscreen()
@@ -242,23 +228,33 @@ export default {
         },
     },
     created() {
-        this.screenWidth = document.body.clientWidth;
-        this.screenHeight = document.body.clientHeight;
+        let that = this
+        function change() {
+            that.screenWidth = document.body.clientWidth;
+            that.screenHeight = document.body.clientHeight;
+            that.colorImageSize[0] = Math.max(that.screenHeight, that.screenWidth) / 2
+            that.colorImageSize[1] = that.colorImageSize[0] * Math.sqrt(2)
+            that.colorBackgroundImage = [{
+                left: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2),
+                top: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2)
+            },
+            {
+                left: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2) + that.colorImageSize[0],
+                top: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2)
+            },
+            {
+                left: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2),
+                top: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2) + that.colorImageSize[0]
+            },
+            {
+                left: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2) + that.colorImageSize[0],
+                top: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2) + that.colorImageSize[0]
+            }]
+        }
+        change()
         window.onresize = () => {
             return (() => {
-                this.screenWidth = document.body.clientWidth;
-                this.screenHeight = document.body.clientHeight;
-                let output = []
-                for (let i = 0; i < this.images.length; i++) {
-                    let a = Math.max(this.screenHeight, this.screenWidth) / 2
-                    let A = Math.sqrt(Math.max(this.screenHeight, this.screenWidth) ** 2 / 2)
-                    let zuobiao = i.toString(2).length == 1 ? '0' + i.toString(2) : i.toString(2);
-                    let left = `${-((A - a) / 2) + parseInt(zuobiao[1]) * a}px`;
-                    let top = `${-((A - a) / 2) + parseInt(zuobiao[0]) * a}px`;
-                    let size = `${Math.sqrt(Math.max(this.screenHeight, this.screenWidth) ** 2 / 2)}px`
-                    output.push({ left, top, size })
-                }
-                this.colorBackgroundImage = output;
+                change()
             })()
         };
     }
@@ -307,17 +303,20 @@ export default {
             <p class="footerP fontHint">字体使用 方正清刻本悦宋</p>
         </footer>
     </div>
-    <div class="colorBackground background" v-show="play && colorBackgroundVisible">
-        <div class="colorBackgroundContainer">
-            <img class="colorBackgroundImage" v-for="(e, i) in images" :src="e" :style="`
-            width:${colorBackgroundImage[i].size};
-            aspect-ratio:1/1;
-            left:${colorBackgroundImage[i].left};
-            top:${colorBackgroundImage[i].top}`" />
-        </div>
-    </div>
-    <div class="blackBackground background" v-show="play && !colorBackgroundVisible"></div>
     <div class="play" v-show="play">
+        <div class="colorBackground background" v-show="colorBackgroundVisible">
+            <div class="colorBackgroundContainer">
+                <img class="colorBackgroundImage" v-for="(e, i) in images" :src="e" :style="`
+                width:${colorImageSize[1]}px;
+                aspect-ratio:1/1;
+                left:${colorBackgroundImage[i].left}px;
+                top:${colorBackgroundImage[i].top}px;
+                animation-play-state:${animationPlayState ? 'running' : 'paused'}
+                `" />
+            </div>
+        </div>
+        <div class="blackBackground background" v-show="!colorBackgroundVisible"></div>
+
         <div class="lyricList">
             <span v-for="(item, index) in parsedLyric" v-show="isThisLyric(index)">{{ item.lyric }}</span>
         </div>
@@ -365,6 +364,8 @@ footer {
     padding: 2vw;
     font-family: fangzhengsong;
     font-weight: 800;
+    color: white;
+    z-index:0;
 }
 
 .lyricList>span {
@@ -388,8 +389,7 @@ footer {
 .colorBackgroundImage {
     position: absolute;
     transition: linear;
-    animation: rotate 150s infinite linear;
-    animation-play-state: paused;
+    animation: rotate 100s infinite linear;
 }
 
 @keyframes rotate {
