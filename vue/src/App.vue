@@ -106,6 +106,7 @@ export default {
                                 })
                             }
                         }
+                        that.colorBackgroundVisible=that.oldColorBackgroundVisible?true:false;
                     }
                 }
 
@@ -314,7 +315,7 @@ export default {
     <div class="play" v-show="play">
         <div class="colorBackground background" v-show="colorBackgroundVisible">
             <div class="colorBackgroundContainer">
-                <img class="colorBackgroundImage" v-for="(e, i) in images" :src="e" :onload="(colorBackgroundVisible=oldColorBackgroundVisible?true:false)"
+                <img class="colorBackgroundImage" v-for="(e, i) in images" :src="e"
                 :style="`
                 width:${colorImageSize[1]}px;
                 aspect-ratio:1/1;
