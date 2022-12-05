@@ -309,7 +309,7 @@ export default {
             <p class="footerP">
                 来自青岛，用<span style="color:red;">♥</span>制作
             </p>
-            <p class="footerP fontHint">字体使用 <span style="font-family: fangzhengsong">方正清刻本悦宋</span>、<span style="font-family: ms-mincho">MS Mincho</span></p>
+            <p class="footerP fontHint">字体使用 <span style="font-family: fangzhengsong">方正清刻本悦宋</span>、<span style="font-family: ms-mincho">明朝体</span></p>
         </footer>
     </div>
     <div class="play" v-show="play">
