@@ -24,7 +24,8 @@ export default {
             searchInput: undefined,
             play: 0,
             musicTime: 0,
-            colorBackgroundVisible: 0,
+            colorBackgroundVisible: true,
+            oldColorBackgroundVisible:true,
             animationPlayState: 0,
             images: [],
             colorImageSize: [],
@@ -94,9 +95,9 @@ export default {
                     }
 
                     splitImg() {
-                        this.simpleWidth = parseInt(this.img.width / this.options.col)
-                        this.simpleHeight = parseInt(this.img.height / this.options.row)
-                        that.images=[]
+                        this.simpleWidth = +(this.img.width / this.options.col)
+                        this.simpleHeight = +(this.img.height / this.options.row)
+                        that.images = []
                         for (let y = 0; y < this.options.row; y++) {
                             for (let x = 0; x < this.options.col; x++) {
                                 this.drawImg({
@@ -109,6 +110,8 @@ export default {
                 }
 
                 const background = async (url) => {
+                    this.oldColorBackgroundVisible=Boolean(`${this.colorBackgroundVisible}`)
+                    this.colorBackgroundVisible=false
                     const img = new Image();
                     img.src = url;
                     img.setAttribute("crossOrigin", 'Anonymous')
@@ -119,14 +122,13 @@ export default {
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                         const base64 = canvas.toDataURL('image/jpeg');
-                        let splitImage = new SplitImage({
+                        let splitImage =  new SplitImage({
                             row: 2,
                             col: 2,
                             base64
                         })
                     }
                 }
-
                 background(albumCover)
             }
             let dom = document.getElementById('music');
@@ -172,13 +174,19 @@ export default {
             this.musicTime = document.getElementById('music').currentTime;
         },
         isThisLyric(index) {
-            let out = false
-            if (index + 1 <= this.parsedLyric.length - 1) {
-                out = this.parsedLyric[index].time <= this.musicTime && this.parsedLyric[index + 1].time > this.musicTime
-            } else {
-                out = this.parsedLyric[index].time <= this.musicTime
+            const lyricTime = this.parsedLyric[index].time;
+            const musicTime = this.musicTime
+            // 求出下一句时间 解决群青问题
+            let i=1;
+            let nextTime=0;
+            while(nextTime<=lyricTime && index!==this.parsedLyric.length-1){
+                nextTime=this.parsedLyric[index + i].time
+                i++
             }
-            return out
+            if(musicTime >= lyricTime && (index===this.parsedLyric.length-1 || musicTime < nextTime)){
+                return 1;
+            }
+            return 0
         },
         back() {
             document.getElementById('music').pause();
@@ -300,13 +308,14 @@ export default {
             <p class="footerP">
                 来自青岛，用<span style="color:red;">♥</span>制作
             </p>
-            <p class="footerP fontHint">字体使用 方正清刻本悦宋</p>
+            <p class="footerP fontHint">字体使用 <span style="font-family: fangzhengsong">方正清刻本悦宋</span>、<span style="font-family: ms-mincho">MS Mincho</span></p>
         </footer>
     </div>
     <div class="play" v-show="play">
         <div class="colorBackground background" v-show="colorBackgroundVisible">
             <div class="colorBackgroundContainer">
-                <img class="colorBackgroundImage" v-for="(e, i) in images" :src="e" :style="`
+                <img class="colorBackgroundImage" v-for="(e, i) in images" :src="e" :onload="(colorBackgroundVisible=oldColorBackgroundVisible?true:false)"
+                :style="`
                 width:${colorImageSize[1]}px;
                 aspect-ratio:1/1;
                 left:${colorBackgroundImage[i].left}px;
@@ -318,7 +327,9 @@ export default {
         <div class="blackBackground background" v-show="!colorBackgroundVisible"></div>
 
         <div class="lyricList">
-            <span v-for="(item, index) in parsedLyric" v-show="isThisLyric(index)">{{ item.lyric }}</span>
+            <span v-for="(item, index) in parsedLyric" v-show="isThisLyric(index)">{{
+                    item.lyric
+            }}</span>
         </div>
         <div class="playFooter">
             <el-button size="large" round @click="back">返回</el-button>
@@ -338,7 +349,6 @@ footer {
 }
 
 .fontHint {
-    font-family: fangzhengsong;
     font-weight: inherit;
 }
 
@@ -362,10 +372,10 @@ footer {
 .lyricList {
     font-size: 8vw;
     padding: 2vw;
-    font-family: fangzhengsong;
+    font-family: fangzhengsong,ms-mincho;
     font-weight: 800;
     color: white;
-    z-index:0;
+    z-index: 0;
 }
 
 .lyricList>span {

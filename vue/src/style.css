@@ -2,16 +2,23 @@
 
 @font-face {
     font-family: fangzhengsong;
-    src: url('/font/font.woff2'),
-         url('/font/font.woff'),
-         url('/font/font.ttf');
+    src: url('/font/fzqkbys/font.woff2'),
+         url('/font/fzqkbys/font.woff'),
+         url('/font/fzqkbys/font.ttf');
+    font-display: swap;
+}
+
+@font-face {
+    font-family: ms-mincho;
+    src: url('/font/ms-mincho/font.woff2'),
+         url('/font/ms-mincho/font.woff'),
+         url('/font/ms-mincho/font.ttf');
     font-display: swap;
 }
 
 :root {
     font-size: 16px;
     line-height: 24px;
-    font-weight: 400;
     color: #213547;
     background-color: #ffffff;
     /* 修复Safari等浏览器字体显示毛边 */

@@ -1,10 +1,12 @@
 const express = require("express");
 const path = require("path")
+const cors = require('cors')
 const { search, lyric, song_url_v1, album } = require('NeteaseCloudMusicApi');
 const app = express();
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '/public')));
+app.use(cors())
 
 const port = 3000;
 
