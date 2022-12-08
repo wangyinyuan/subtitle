@@ -1,6 +1,6 @@
 const express = require("express");
 const path = require("path")
-const { search, lyric, song_url_v1, album } = require('NeteaseCloudMusicApi');
+const { search, lyric, song_url_v1, album, song_detail } = require('NeteaseCloudMusicApi');
 
 const { pinyin } = require('pinyin-pro');
 const ToJyutping = require('to-jyutping');
@@ -11,6 +11,11 @@ const kuromojiAnalyzer = new KuromojiAnalyzer();
 kuroshiro.init(kuromojiAnalyzer)
 
 const app = express();
+
+/*
+const cors = require("cors")
+app.use(cors())
+*/
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '/public')));
@@ -23,11 +28,21 @@ app.get('/', (req, res) => {
 
 app.post('/api/search', async (req, res) => {
     try {
-        const result = await search({
+        let result = await search({
             keywords: req.body.keywords,
             type: 1,
             limit: 10
         })
+        if(result.body.result.songs){
+            const detail = await song_detail({
+                ids: result.body.result.songs.map(i=>i.id).join(',')
+            })
+            if(detail.status===200){
+                for(let i=0;i<result.body.result.songs.length;i++){
+                    result.body.result.songs[i].noCopyrightRcmd = detail.body.songs[i].noCopyrightRcmd===null?1:0
+                }
+            }
+        }
         res.json(result)
     } catch (error) {
         res.json(error)
@@ -49,7 +64,7 @@ app.post('/api/songURL', async (req, res) => {
     try {
         const result = await song_url_v1({
             id: req.body.id,
-            level: 'exhigh'
+            level: 'standard'
         })
         res.json(result)
     } catch (error) {

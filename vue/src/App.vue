@@ -1,6 +1,6 @@
 <script>
 console.log('望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
-async function api(name, parm) {
+const api = async (name, parm) => {
     let out = {}
     // await fetch('http://localhost:3000/api/' + name, {
     await fetch('/api/' + name, {
@@ -27,7 +27,6 @@ export default {
             colorBackgroundVisible: true,
             oldColorBackgroundVisible: true,
             animationPlayState: false,
-            images: [],
             colorImageSize: [],
             colorBackgroundImage: [],
             pinyinOptions: [
@@ -72,6 +71,10 @@ export default {
             }
         },
         async subtitle(row) {
+            console.log(JSON.parse(JSON.stringify(row)))
+            if ((row.fee === 1 || row.fee === 4) && row.noCopyrightRcmd===1) {
+                return 0;
+            }
             this.pinyinLyric = {
                 mandarin: [],
                 cantonese: [],
@@ -101,11 +104,6 @@ export default {
                         this.img = null
                         this.simpleWidth = 0
                         this.simpleHeight = 0
-                        this.init()
-                    }
-                    init() {
-                        this.canvas = document.createElement('canvas')
-                        this.ctx = this.canvas.getContext('2d')
                         this.createImg(this.options.base64)
                     }
                     createImg(base64) { // 加载图片
@@ -127,45 +125,42 @@ export default {
                         this.canvas.width = this.simpleWidth
                         this.canvas.height = this.simpleHeight
                         this.ctx.drawImage(this.img, options.x, options.y, this.simpleWidth, this.simpleHeight, 0, 0, this.simpleWidth, this.simpleHeight)
-                        const base64 = this.canvas.toDataURL()
-                        that.images.push(base64)
                     }
 
                     splitImg() {
-                        this.simpleWidth = +(this.img.width / this.options.col)
-                        this.simpleHeight = +(this.img.height / this.options.row)
-                        that.images = []
+                        this.simpleWidth = this.img.width / this.options.col
+                        this.simpleHeight = this.img.height / this.options.row
+                        let i = 0
                         for (let y = 0; y < this.options.row; y++) {
                             for (let x = 0; x < this.options.col; x++) {
+                                this.canvas = document.getElementById(`colorBackgroundImage${i}`)
+                                this.ctx = this.canvas.getContext('2d')
                                 this.drawImg({
                                     x: x * this.simpleWidth,
-                                    y: y * this.simpleHeight,
+                                    y: y * this.simpleHeight
                                 })
+                                i++;
                             }
                         }
-                        that.colorBackgroundVisible = that.oldColorBackgroundVisible ? true : false;
+                        that.colorBackgroundVisible = that.oldColorBackgroundVisible
+                        if (that.colorBackgroundVisible) {
+                            let element = document.getElementsByClassName('colorBackground')[0]
+                            element.style.display = 'auto';
+                            element.style.opacity = 1;
+                        }
                     }
                 }
 
                 const background = async (url) => {
                     this.oldColorBackgroundVisible = Boolean(`${this.colorBackgroundVisible}`)
                     this.colorBackgroundVisible = false
-                    const img = new Image();
-                    img.src = url;
-                    img.setAttribute("crossOrigin", 'Anonymous')
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        const base64 = canvas.toDataURL('image/jpeg');
-                        let splitImage = new SplitImage({
-                            row: 2,
-                            col: 2,
-                            base64
-                        })
-                    }
+                    let element = document.getElementsByClassName('colorBackground')[0]
+                    element.style.opacity = 0;
+                    let splitImage = new SplitImage({
+                        row: 2,
+                        col: 2,
+                        base64: url
+                    })
                 }
                 background(albumCover)
             }
@@ -207,6 +202,13 @@ export default {
             }
             document.querySelector('title').innerText = `${row.name} - 字幕`
             this.play = true;
+            let element = document.getElementsByClassName('play')[0]
+            let element1 = document.getElementsByClassName('search')[0]
+            element.style.display = 'flex';
+            setTimeout(() => {
+                element.style.opacity = 1;
+                element1.style.display = 'none';
+            }, 1)
         },
         setMusicTime() {
             this.musicTime = document.getElementById('music').currentTime;
@@ -229,6 +231,13 @@ export default {
         back() {
             document.getElementById('music').pause();
             this.play = false;
+            let element = document.getElementsByClassName('play')[0]
+            let element1 = document.getElementsByClassName('search')[0]
+            element1.style.display = 'block';
+            element.style.opacity = 0;
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 500)
             document.querySelector('title').innerText = '字幕'
         },
         async pinyinChange(val) {
@@ -237,9 +246,25 @@ export default {
                 this.pinyinLyric[val] = data
             }
         },
-        closeSetting(type) {
-            if (type) {
-
+        tableRowClassName({ row }) {
+            if ((row.fee === 0 || row.fee === 8)&&row.noCopyrightRcmd===1) {
+                return 'freeMusic'
+            } else {
+                return 'vipMusic'
+            }
+        },
+        backgorundChange(val) {
+            let element = document.getElementsByClassName('colorBackground')[0]
+            if (val) {
+                element.style.display = 'block';
+                setTimeout(()=>{
+                    element.style.opacity = 1;
+                },1)
+            } else {
+                element.style.opacity = 0;
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 500);
             }
         }
     },
@@ -286,7 +311,7 @@ export default {
     },
     created() {
         let that = this
-        function change() {
+        const change = ()=>{
             that.screenWidth = document.body.clientWidth;
             that.screenHeight = document.body.clientHeight;
             that.colorImageSize[0] = Math.max(that.screenHeight, that.screenWidth) / 2
@@ -318,7 +343,7 @@ export default {
 }
 </script>
 <template>
-    <div class="search" v-show="!play">
+    <div class="search">
         <div>
             <img src="/icon/icon.svg" alt="图标" class="searchIcon">
         </div>
@@ -328,7 +353,8 @@ export default {
             <el-button size="large" @click="search">搜索</el-button>
         </div>
         <div class="searchData" v-if="searchTableShow">
-            <el-table class="searchDataTable" :data="searchData" @row-click="subtitle" empty-text="无歌曲" stripe>
+            <el-table class="searchDataTable" :data="searchData" @row-click="subtitle" empty-text="无歌曲" stripe
+                :row-class-name="tableRowClassName">
                 <el-table-column prop="name" label="歌名" />
                 <el-table-column label="歌手">
                     <template #default="scope">
@@ -361,19 +387,21 @@ export default {
                     style="font-family: ms-mincho">明朝体</span></p>
         </footer>
     </div>
-    <div class="play" v-show="play">
-        <div class="colorBackground background" v-show="colorBackgroundVisible">
+    <div class="play" style="transition: opacity .5s;display:none;opacity:0;z-index:20;">
+        <div class="blackBackground background">
+        </div>
+        <div class="colorBackground background" :style="`transition: opacity .5s;z-index:20;`">
             <div class="colorBackgroundContainer">
-                <img class="colorBackgroundImage" v-for="(e, i) in images" :src="e" alt="背景" :style="`
-                width:${colorImageSize[1]}px;
-                aspect-ratio:1/1;
-                left:${colorBackgroundImage[i].left}px;
-                top:${colorBackgroundImage[i].top}px;
-                animation-play-state:${animationPlayState ? 'running' : 'paused'}
-                `" />
+                <canvas class="colorBackgroundImage" v-for="(e, i) in [0, 0, 0, 0]" :id="`colorBackgroundImage${i}`"
+                    :style="`
+                    width:${colorImageSize[1]}px;
+                    aspect-ratio:1/1;
+                    left:${colorBackgroundImage[i].left}px;
+                    top:${colorBackgroundImage[i].top}px;
+                    animation-play-state:${animationPlayState ? 'running' : 'paused'}
+                    `"></canvas>
             </div>
         </div>
-        <div class="blackBackground background" v-show="!colorBackgroundVisible"></div>
 
         <div class="lyricList">
             <span v-for="(item, index) in pinyin === 'none' ? parsedLyric : pinyinLyric[pinyin]"
@@ -384,7 +412,8 @@ export default {
             <audio id="music" :src="songURL" controls preload="auto" :ontimeupdate="setMusicTime" />
             <el-dropdown placement="top" trigger="click" class="settings">
                 <span class="el-dropdown-link">
-                    <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" style="color:rgb(84 84 84);width:30px;height:30px">
+                    <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"
+                        style="color:rgb(84 84 84);width:30px;height:30px">
                         <path fill="currentColor"
                             d="M600.704 64a32 32 0 0 1 30.464 22.208l35.2 109.376c14.784 7.232 28.928 15.36 42.432 24.512l112.384-24.192a32 32 0 0 1 34.432 15.36L944.32 364.8a32 32 0 0 1-4.032 37.504l-77.12 85.12a357.12 357.12 0 0 1 0 49.024l77.12 85.248a32 32 0 0 1 4.032 37.504l-88.704 153.6a32 32 0 0 1-34.432 15.296L708.8 803.904c-13.44 9.088-27.648 17.28-42.368 24.512l-35.264 109.376A32 32 0 0 1 600.704 960H423.296a32 32 0 0 1-30.464-22.208L357.696 828.48a351.616 351.616 0 0 1-42.56-24.64l-112.32 24.256a32 32 0 0 1-34.432-15.36L79.68 659.2a32 32 0 0 1 4.032-37.504l77.12-85.248a357.12 357.12 0 0 1 0-48.896l-77.12-85.248A32 32 0 0 1 79.68 364.8l88.704-153.6a32 32 0 0 1 34.432-15.296l112.32 24.256c13.568-9.152 27.776-17.408 42.56-24.64l35.2-109.312A32 32 0 0 1 423.232 64H600.64zm-23.424 64H446.72l-36.352 113.088-24.512 11.968a294.113 294.113 0 0 0-34.816 20.096l-22.656 15.36-116.224-25.088-65.28 113.152 79.68 88.192-1.92 27.136a293.12 293.12 0 0 0 0 40.192l1.92 27.136-79.808 88.192 65.344 113.152 116.224-25.024 22.656 15.296a294.113 294.113 0 0 0 34.816 20.096l24.512 11.968L446.72 896h130.688l36.48-113.152 24.448-11.904a288.282 288.282 0 0 0 34.752-20.096l22.592-15.296 116.288 25.024 65.28-113.152-79.744-88.192 1.92-27.136a293.12 293.12 0 0 0 0-40.256l-1.92-27.136 79.808-88.128-65.344-113.152-116.288 24.96-22.592-15.232a287.616 287.616 0 0 0-34.752-20.096l-24.448-11.904L577.344 128zM512 320a192 192 0 1 1 0 384 192 192 0 0 1 0-384zm0 64a128 128 0 1 0 0 256 128 128 0 0 0 0-256z">
                         </path>
@@ -394,7 +423,7 @@ export default {
                     <el-dropdown-menu>
                         <el-dropdown-item>
                             <el-switch v-model="colorBackgroundVisible" size="large" active-text="彩色背景"
-                                inactive-text="黑色背景" style="width:100%" />
+                                inactive-text="黑色背景" style="width:100%" @change="backgorundChange" />
                         </el-dropdown-item>
                         <el-dropdown-item>
                             <el-select v-model="pinyin" class="m-2" placeholder="注音" size="large"
@@ -410,7 +439,17 @@ export default {
     </div>
 </template>
 <style>
-ruby > rt {
+.freeMusic {
+    cursor: pointer;
+}
+
+.vipMusic {
+    cursor: not-allowed;
+    text-decoration: line-through;
+    color: #ababab;
+}
+
+ruby>rt {
     text-align: center;
 }
 
@@ -445,6 +484,7 @@ footer {
     flex-wrap: wrap;
     justify-content: center;
     gap: 2vw;
+    z-index: 20;
 }
 
 .playFooter>.el-select>.select-trigger>.el-input>.el-input__wrapper {
@@ -458,7 +498,7 @@ footer {
     font-family: fangzhengsong, ms-mincho;
     font-weight: 800;
     color: white;
-    z-index: 0;
+    z-index: 20;
 }
 
 .lyricList>span {
@@ -532,10 +572,6 @@ footer {
     margin-top: 1vw;
 }
 
-.el-table__row {
-    cursor: pointer;
-}
-
 .searchIcon {
     height: 13vw;
     min-height: 90px;
@@ -553,5 +589,20 @@ footer {
 
 .mandarinPinyin {
     font-family: ms-mincho;
+}
+
+.search {
+    z-index: 1;
+}
+
+body {
+    scrollbar-width: none;
+    /* firefox */
+    -ms-overflow-style: none;
+    /* IE 10+ */
+}
+
+body::-webkit-scrollbar {
+    display: none;
 }
 </style>
