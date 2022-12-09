@@ -2,10 +2,10 @@
 
 @font-face {
     font-family: SourceHanSerifCN-Heavy;
-    src: url('/font/SourceHanSerifCN-Heavy/font.woff2'),
-         url('/font/SourceHanSerifCN-Heavy/font.woff'),
-         url('/font/SourceHanSerifCN-Heavy/font.otf'),
-         url('/font/SourceHanSerifCN-Heavy/font.ttf');
+    src: url('/font/font.woff2'),
+         url('/font/font.woff'),
+         url('/font/font.otf'),
+         url('/font/font.ttf');
     font-display: swap;
 }
 
@@ -14,9 +14,6 @@
     line-height: 24px;
     color: #213547;
     background-color: #ffffff;
-    /* 修复Safari等浏览器字体显示毛边 */
-    -moz-osx-font-smoothing: antialiased;
-    -webkit-font-smoothing: antialiased;
 }
 
 a {

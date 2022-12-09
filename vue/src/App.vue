@@ -378,7 +378,7 @@ export default {
             <el-button size="large" @click="search">搜索</el-button>
         </div>
         <div class="searchData" v-if="searchTableShow">
-            <el-table v-loading="loading" class="searchDataTable" :data="searchData" @row-click="subtitle"
+            <el-table v-loading="loading||1" class="searchDataTable" :data="searchData" @row-click="subtitle"
                 empty-text="无歌曲" stripe :row-class-name="tableRowClassName">
                 <el-table-column prop="name" label="歌名" />
                 <el-table-column label="歌手">
@@ -539,6 +539,8 @@ footer {
     color: white;
     z-index: 20;
     font-size: 8vw;
+    -moz-osx-font-smoothing: antialiased;
+    -webkit-font-smoothing: antialiased;
 }
 
 .lyricList>span {
