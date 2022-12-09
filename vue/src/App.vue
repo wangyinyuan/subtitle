@@ -27,7 +27,10 @@ export default {
             colorBackgroundVisible: true,
             oldColorBackgroundVisible: true,
             animationPlayState: false,
+<<<<<<< HEAD
             loading: false,
+=======
+>>>>>>> master
             colorImageSize: [],
             colorBackgroundImage: [],
             pinyinOptions: [
@@ -74,6 +77,7 @@ export default {
             }
         },
         async subtitle(row) {
+<<<<<<< HEAD
             // 若不能播放
             if ((row.fee === 1 || row.fee === 4) && row.noCopyrightRcmd === 1) {
                 return;
@@ -81,6 +85,12 @@ export default {
 
             this.loading = true;
 
+=======
+            console.log(JSON.parse(JSON.stringify(row)))
+            if ((row.fee === 1 || row.fee === 4) && row.noCopyrightRcmd===1) {
+                return 0;
+            }
+>>>>>>> master
             this.pinyinLyric = {
                 mandarin: [],
                 cantonese: [],
@@ -170,9 +180,13 @@ export default {
                         if (that.colorBackgroundVisible) {
                             let element = document.getElementsByClassName('colorBackground')[0]
                             element.style.display = 'auto';
+<<<<<<< HEAD
                             setTimeout(() => {
                                 element.style.opacity = 1;
                             }, 1)
+=======
+                            element.style.opacity = 1;
+>>>>>>> master
                         }
                     }
                 }
@@ -181,7 +195,11 @@ export default {
                     this.colorBackgroundVisible = false
                     let element = document.getElementsByClassName('colorBackground')[0]
                     element.style.opacity = 0;
+<<<<<<< HEAD
                     new SplitImage({
+=======
+                    let splitImage = new SplitImage({
+>>>>>>> master
                         row: 2,
                         col: 2,
                         base64: url
@@ -238,7 +256,10 @@ export default {
                 element.style.opacity = 1;
                 element1.style.display = 'none';
             }, 1)
+<<<<<<< HEAD
             this.loading = false;
+=======
+>>>>>>> master
         },
         setMusicTime() {
             this.musicTime = document.getElementById('music').currentTime;
@@ -277,7 +298,11 @@ export default {
             }
         },
         tableRowClassName({ row }) {
+<<<<<<< HEAD
             if ((row.fee === 0 || row.fee === 8) && row.noCopyrightRcmd === 1) {
+=======
+            if ((row.fee === 0 || row.fee === 8)&&row.noCopyrightRcmd===1) {
+>>>>>>> master
                 return 'freeMusic'
             } else {
                 return 'vipMusic'
@@ -287,9 +312,15 @@ export default {
             let element = document.getElementsByClassName('colorBackground')[0]
             if (val) {
                 element.style.display = 'block';
+<<<<<<< HEAD
                 setTimeout(() => {
                     element.style.opacity = 1;
                 }, 1)
+=======
+                setTimeout(()=>{
+                    element.style.opacity = 1;
+                },1)
+>>>>>>> master
             } else {
                 element.style.opacity = 0;
                 setTimeout(() => {
@@ -337,7 +368,11 @@ export default {
     },
     created() {
         let that = this
+<<<<<<< HEAD
         const change = () => {
+=======
+        const change = ()=>{
+>>>>>>> master
             that.screenWidth = document.body.clientWidth;
             that.screenHeight = document.body.clientHeight;
             that.colorImageSize[0] = Math.max(that.screenHeight, that.screenWidth) / 2
@@ -378,8 +413,13 @@ export default {
             <el-button size="large" @click="search">搜索</el-button>
         </div>
         <div class="searchData" v-if="searchTableShow">
+<<<<<<< HEAD
             <el-table v-loading="loading" class="searchDataTable" :data="searchData" @row-click="subtitle"
                 empty-text="无歌曲" stripe :row-class-name="tableRowClassName">
+=======
+            <el-table class="searchDataTable" :data="searchData" @row-click="subtitle" empty-text="无歌曲" stripe
+                :row-class-name="tableRowClassName">
+>>>>>>> master
                 <el-table-column prop="name" label="歌名" />
                 <el-table-column label="歌手">
                     <template #default="scope">
@@ -413,15 +453,26 @@ export default {
             </p>
         </footer>
     </div>
+<<<<<<< HEAD
     <div class="play">
         <div class="blackBackground background">
         </div>
         <div class="colorBackground background">
+=======
+    <div class="play" style="transition: opacity .5s;display:none;opacity:0;z-index:20;">
+        <div class="blackBackground background">
+        </div>
+        <div class="colorBackground background" :style="`transition: opacity .5s;z-index:20;`">
+>>>>>>> master
             <div class="colorBackgroundContainer">
                 <canvas class="colorBackgroundImage" v-for="(e, i) in [0, 0, 0, 0]" :id="`colorBackgroundImage${i}`"
                     :style="`
                     width:${colorImageSize[1]}px;
+<<<<<<< HEAD
                     height:${colorImageSize[1]}px;
+=======
+                    aspect-ratio:1/1;
+>>>>>>> master
                     left:${colorBackgroundImage[i].left}px;
                     top:${colorBackgroundImage[i].top}px;
                     animation-play-state:${animationPlayState ? 'running' : 'paused'}
@@ -448,8 +499,13 @@ export default {
                 <template #dropdown>
                     <el-dropdown-menu>
                         <el-dropdown-item>
+<<<<<<< HEAD
                             <el-switch id="colorBackgroundChangeSwitch" v-model="colorBackgroundVisible" size="large"
                                 active-text="彩色背景" inactive-text="黑色背景" style="width:100%" @change="backgorundChange" />
+=======
+                            <el-switch v-model="colorBackgroundVisible" size="large" active-text="彩色背景"
+                                inactive-text="黑色背景" style="width:100%" @change="backgorundChange" />
+>>>>>>> master
                         </el-dropdown-item>
                         <el-dropdown-item>
                             <el-select v-model="pinyin" class="m-2" placeholder="注音" size="large"
@@ -465,6 +521,7 @@ export default {
     </div>
 </template>
 <style>
+<<<<<<< HEAD
 .f16{font-size: 16px;}
 
 .gonganFooterP {
@@ -477,6 +534,8 @@ export default {
     align-items: center;
 }
 
+=======
+>>>>>>> master
 .freeMusic {
     cursor: pointer;
 }
@@ -538,7 +597,10 @@ footer {
     font-weight: 600;
     color: white;
     z-index: 20;
+<<<<<<< HEAD
     font-size: 8vw;
+=======
+>>>>>>> master
 }
 
 .lyricList>span {
@@ -645,6 +707,21 @@ footer {
 body {
     scrollbar-width: none;
     -ms-overflow-style: none;
+}
+
+body::-webkit-scrollbar {
+    display: none;
+}
+
+.search {
+    z-index: 1;
+}
+
+body {
+    scrollbar-width: none;
+    /* firefox */
+    -ms-overflow-style: none;
+    /* IE 10+ */
 }
 
 body::-webkit-scrollbar {

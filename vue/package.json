@@ -9,7 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@liripeng/vue-audio-player": "^1.5.0",
+=======
+>>>>>>> master
     "animate.css": "^4.1.1",
     "element-plus": "^2.2.21",
     "vue": "^3.2.41"
