@@ -27,6 +27,7 @@ export default {
             colorBackgroundVisible: true,
             oldColorBackgroundVisible: true,
             animationPlayState: false,
+            loading: false,
             colorImageSize: [],
             colorBackgroundImage: [],
             pinyinOptions: [
@@ -57,7 +58,7 @@ export default {
                 jpRoma: [],
                 jpHiragana: []
             },
-            pinyin: 'none',
+            pinyin: 'none'
         }
     },
     methods: {
@@ -68,13 +69,18 @@ export default {
                     this.searchTableShow = 1;
                     this.searchData = data.body.result.songs ? data.body.result.songs : [];
                 }
+            }else{
+                this.searchTableShow = false;
             }
         },
         async subtitle(row) {
-            console.log(JSON.parse(JSON.stringify(row)))
-            if ((row.fee === 1 || row.fee === 4) && row.noCopyrightRcmd===1) {
-                return 0;
+            // 若不能播放
+            if ((row.fee === 1 || row.fee === 4) && row.noCopyrightRcmd === 1) {
+                return;
             }
+
+            this.loading = true;
+
             this.pinyinLyric = {
                 mandarin: [],
                 cantonese: [],
@@ -83,18 +89,30 @@ export default {
             }
             this.pinyin = 'none'
             this.animationPlayState = false
+            document.getElementById('colorBackgroundChangeSwitch').disabled = false
+
             const promiseAlbum = api('album', { id: row.album.id });
             const promiseLyric = api('lyric', { id: row.id })
             const promiseSongURL = api('songURL', { id: row.id })
             const [lyric, songURL, album] = await Promise.all([promiseLyric, promiseSongURL, promiseAlbum])
-
-            if (songURL.status === 200 && lyric.status === 200 && album.status === 200) {
+            if (songURL.status === 200) {
+                this.songURL = songURL.body.data[0].url.split(':').join('s:')
+            } else {
+                this.loading = false;
+                ElMessage.error(`音乐获取失败！错误码：${songURL.status}`)
+                return;
+            }
+            if (lyric.status === 200) {
                 this.lyric = lyric.body.lrc.lyric;
                 this.parsedLyric = this.parseLyric;
-                this.songURL = songURL.body.data[0].url.split(':').join('s:')
+            } else {
+                this.loading = false;
+                ElMessage.error(`歌词获取失败！错误码：${lyric.status}`);
+                return;
+            }
+            if (album.status === 200) {
                 let albumCover = album.body.songs[0].al.picUrl;
                 let that = this;
-
                 class SplitImage {
                     constructor(options) {
                         this.options = options
@@ -106,7 +124,7 @@ export default {
                         this.simpleHeight = 0
                         this.createImg(this.options.base64)
                     }
-                    createImg(base64) { // 加载图片
+                    createImg(base64) {
                         return new Promise((resolve, reject) => {
                             const img = new Image()
                             img.src = base64
@@ -116,12 +134,18 @@ export default {
                                 resolve()
                             }
                             img.onerror = (e) => {
-                                console.log(e)
+                                console.error(`专辑图片加载错误！错误信息：${e}`)
+                                ElMessage({
+                                    type: 'error',
+                                    message: `专辑图片加载错误！错误信息：${e}`,
+                                    duration: 0,
+                                    showClose: true
+                                })
                                 reject(e)
                             }
                         })
                     }
-                    drawImg(options) { // 绘制图片
+                    drawImg(options) {
                         this.canvas.width = this.simpleWidth
                         this.canvas.height = this.simpleHeight
                         this.ctx.drawImage(this.img, options.x, options.y, this.simpleWidth, this.simpleHeight, 0, 0, this.simpleWidth, this.simpleHeight)
@@ -146,24 +170,29 @@ export default {
                         if (that.colorBackgroundVisible) {
                             let element = document.getElementsByClassName('colorBackground')[0]
                             element.style.display = 'auto';
-                            element.style.opacity = 1;
+                            setTimeout(() => {
+                                element.style.opacity = 1;
+                            }, 1)
                         }
                     }
                 }
-
                 const background = async (url) => {
                     this.oldColorBackgroundVisible = Boolean(`${this.colorBackgroundVisible}`)
                     this.colorBackgroundVisible = false
                     let element = document.getElementsByClassName('colorBackground')[0]
                     element.style.opacity = 0;
-                    let splitImage = new SplitImage({
+                    new SplitImage({
                         row: 2,
                         col: 2,
                         base64: url
                     })
                 }
                 background(albumCover)
+            } else {
+                document.getElementById('colorBackgroundChangeSwitch').disabled = true;
+                ElMessage.error(`专辑获取错误！错误码：${album.status}`)
             }
+
             let dom = document.getElementById('music');
             dom.onplay = () => {
                 this.animationPlayState = true
@@ -209,6 +238,7 @@ export default {
                 element.style.opacity = 1;
                 element1.style.display = 'none';
             }, 1)
+            this.loading = false;
         },
         setMusicTime() {
             this.musicTime = document.getElementById('music').currentTime;
@@ -219,7 +249,7 @@ export default {
             // 求出下一句时间 解决群青问题
             let i = 1;
             let nextTime = 0;
-            while (nextTime <= lyricTime && index !== this.parsedLyric.length - 1) {
+            while (nextTime <= lyricTime && index !== this.parsedLyric.length - 1 && (index + i) <= this.parsedLyric.length - 1) {
                 nextTime = this.parsedLyric[index + i].time
                 i++
             }
@@ -247,7 +277,7 @@ export default {
             }
         },
         tableRowClassName({ row }) {
-            if ((row.fee === 0 || row.fee === 8)&&row.noCopyrightRcmd===1) {
+            if ((row.fee === 0 || row.fee === 8) && row.noCopyrightRcmd === 1) {
                 return 'freeMusic'
             } else {
                 return 'vipMusic'
@@ -257,9 +287,9 @@ export default {
             let element = document.getElementsByClassName('colorBackground')[0]
             if (val) {
                 element.style.display = 'block';
-                setTimeout(()=>{
+                setTimeout(() => {
                     element.style.opacity = 1;
-                },1)
+                }, 1)
             } else {
                 element.style.opacity = 0;
                 setTimeout(() => {
@@ -295,49 +325,44 @@ export default {
                 }
             }
             const lyric = this.lyric;
-
-            const lrcObj = [];
-            const lrcArr = lyric.split("\n").filter(value => {
+            const lrcObj = lyric.split("\n").filter(value => {
                 // 1.通过回车去分割歌词每一行,遍历数组，去除空行空格
                 return value.trim() !== ''
             }).map(value => {
                 // 2.解析歌词
-                const line = parseLyricLine(value.trim());
-                lrcObj.push(line);
-                return value.trim();
+                return parseLyricLine(value.trim());
             })
             return lrcObj;
         },
     },
     created() {
         let that = this
-        const change = ()=>{
+        const change = () => {
             that.screenWidth = document.body.clientWidth;
             that.screenHeight = document.body.clientHeight;
             that.colorImageSize[0] = Math.max(that.screenHeight, that.screenWidth) / 2
             that.colorImageSize[1] = that.colorImageSize[0] * Math.sqrt(2)
+            const margin = -((that.colorImageSize[1] - that.colorImageSize[0]) / 2);
             that.colorBackgroundImage = [{
-                left: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2),
-                top: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2)
+                left: margin,
+                top: margin
             },
             {
-                left: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2) + that.colorImageSize[0],
-                top: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2)
+                left: margin + that.colorImageSize[0],
+                top: margin
             },
             {
-                left: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2),
-                top: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2) + that.colorImageSize[0]
+                left: margin,
+                top: margin + that.colorImageSize[0]
             },
             {
-                left: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2) + that.colorImageSize[0],
-                top: -((that.colorImageSize[1] - that.colorImageSize[0]) / 2) + that.colorImageSize[0]
+                left: margin + that.colorImageSize[0],
+                top: margin + that.colorImageSize[0]
             }]
         }
         change()
         window.onresize = () => {
-            return (() => {
-                change()
-            })()
+            return change()
         };
     }
 }
@@ -353,8 +378,8 @@ export default {
             <el-button size="large" @click="search">搜索</el-button>
         </div>
         <div class="searchData" v-if="searchTableShow">
-            <el-table class="searchDataTable" :data="searchData" @row-click="subtitle" empty-text="无歌曲" stripe
-                :row-class-name="tableRowClassName">
+            <el-table v-loading="loading" class="searchDataTable" :data="searchData" @row-click="subtitle"
+                empty-text="无歌曲" stripe :row-class-name="tableRowClassName">
                 <el-table-column prop="name" label="歌名" />
                 <el-table-column label="歌手">
                     <template #default="scope">
@@ -369,12 +394,11 @@ export default {
             <p class="footerP">
                 <el-link href="https://beian.miit.gov.cn/" target="_blank">鲁ICP备2022004418号-2</el-link>
             </p>
-            <p class="footerP">
-                <img style="vertical-align:middle" src="https://gaoshengjie.cn/images/ghs.png" width="20" height="20"
-                    alt="公安徽标">
-                <el-link target="_blank"
+            <p class="footerP gonganFooterP">
+                <el-link class="gongan f16" target="_blank"
                     href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=37028102001219">
-                    <span style="vertical-align:middle">鲁公网安备 37028102001219号</span>
+                    <img src="https://gaoshengjie.cn/images/ghs.png" width="20" height="20" alt="公安徽标">
+                    <span>鲁公网安备 37028102001219号</span>
                 </el-link>
             </p>
             <p class="footerP">
@@ -383,19 +407,21 @@ export default {
             <p class="footerP">
                 来自青岛，用<span style="color:red;">♥</span>制作
             </p>
-            <p class="footerP fontHint">字体使用 <span style="font-family: fangzhengsong">方正清刻本悦宋</span>、<span
-                    style="font-family: ms-mincho">明朝体</span></p>
+            <p class="footerP fontHint">
+                <el-link href="https://source.typekit.com/source-han-serif/cn/" target="_blank"
+                    style="font-family: SourceHanSerifCN-Heavy;">字体使用：思源宋体 CN Heavy</el-link>
+            </p>
         </footer>
     </div>
-    <div class="play" style="transition: opacity .5s;display:none;opacity:0;z-index:20;">
+    <div class="play">
         <div class="blackBackground background">
         </div>
-        <div class="colorBackground background" :style="`transition: opacity .5s;z-index:20;`">
+        <div class="colorBackground background">
             <div class="colorBackgroundContainer">
                 <canvas class="colorBackgroundImage" v-for="(e, i) in [0, 0, 0, 0]" :id="`colorBackgroundImage${i}`"
                     :style="`
                     width:${colorImageSize[1]}px;
-                    aspect-ratio:1/1;
+                    height:${colorImageSize[1]}px;
                     left:${colorBackgroundImage[i].left}px;
                     top:${colorBackgroundImage[i].top}px;
                     animation-play-state:${animationPlayState ? 'running' : 'paused'}
@@ -422,8 +448,8 @@ export default {
                 <template #dropdown>
                     <el-dropdown-menu>
                         <el-dropdown-item>
-                            <el-switch v-model="colorBackgroundVisible" size="large" active-text="彩色背景"
-                                inactive-text="黑色背景" style="width:100%" @change="backgorundChange" />
+                            <el-switch id="colorBackgroundChangeSwitch" v-model="colorBackgroundVisible" size="large"
+                                active-text="彩色背景" inactive-text="黑色背景" style="width:100%" @change="backgorundChange" />
                         </el-dropdown-item>
                         <el-dropdown-item>
                             <el-select v-model="pinyin" class="m-2" placeholder="注音" size="large"
@@ -439,6 +465,18 @@ export default {
     </div>
 </template>
 <style>
+.f16{font-size: 16px;}
+
+.gonganFooterP {
+    display: flex;
+    justify-content: center;
+}
+
+.gongan {
+    display: flex;
+    align-items: center;
+}
+
 .freeMusic {
     cursor: pointer;
 }
@@ -451,6 +489,7 @@ export default {
 
 ruby>rt {
     text-align: center;
+    font-size: 3vw;
 }
 
 .settings {
@@ -470,10 +509,11 @@ footer {
 
 .footerP {
     margin: 0;
+    color: var(--el-text-color-regular);
 }
 
-.fontHint {
-    font-weight: inherit;
+.footerP > .el-link {
+    font-size: 16px;
 }
 
 .playFooter {
@@ -493,12 +533,12 @@ footer {
 }
 
 .lyricList {
-    font-size: 8vw;
     padding: 2vw;
-    font-family: fangzhengsong, ms-mincho;
-    font-weight: 800;
+    font-family: SourceHanSerifCN-Heavy;
+    font-weight: 600;
     color: white;
     z-index: 20;
+    font-size: 8vw;
 }
 
 .lyricList>span {
@@ -523,6 +563,7 @@ footer {
     position: absolute;
     transition: linear;
     animation: rotate 100s infinite linear;
+    z-index: 20;
 }
 
 @keyframes rotate {
@@ -541,8 +582,14 @@ footer {
     margin: 0;
     padding: 0;
     position: relative;
-    filter: blur(90px);
-    transform: scale(100%);
+
+    filter: blur(90px) brightness(85%) saturate(120%);
+    -webkit-filter: blur(90px) brightness(85%) saturate(120%);
+    -moz-filter: blur(90px) brightness(85%) saturate(120%);
+    -ms-filter: blur(90px) brightness(85%) saturate(120%);
+    -o-filter: blur(90px) brightness(85%) saturate(120%);
+
+    transform: scale(120%);
 }
 
 .colorBackground {
@@ -551,10 +598,11 @@ footer {
     padding: 0;
     margin: 0;
     overflow: hidden;
+    transition: opacity .5s ease;
 }
 
 .play {
-    display: flex;
+    display: none;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -565,6 +613,9 @@ footer {
     right: 0;
     color: white;
     line-height: 8vw;
+    transition: opacity .5s ease;
+    opacity: 0;
+    z-index: 20;
 }
 
 .searchDataTable {
@@ -587,19 +638,13 @@ footer {
     width: 40vw;
 }
 
-.mandarinPinyin {
-    font-family: ms-mincho;
-}
-
 .search {
     z-index: 1;
 }
 
 body {
     scrollbar-width: none;
-    /* firefox */
     -ms-overflow-style: none;
-    /* IE 10+ */
 }
 
 body::-webkit-scrollbar {

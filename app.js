@@ -11,12 +11,10 @@ const kuromojiAnalyzer = new KuromojiAnalyzer();
 kuroshiro.init(kuromojiAnalyzer)
 
 const app = express();
-
 /*
 const cors = require("cors")
 app.use(cors())
 */
-
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '/public')));
 
@@ -124,7 +122,7 @@ app.post('/api/pinyin/mandarin', (req, res) => {
             let html = '<ruby>'
             let py = pinyin(e.lyric, { type: 'array' })
             for (let i = 0; i < e.lyric.length; i++) {
-                html += `${e.lyric[i]}<rp>(</rp><rt class="mandarinPinyin">${py[i]===e.lyric[i]?'':py[i]}</rt><rp>)</rp>`
+                html += `${e.lyric[i]}<rp>(</rp><rt>${py[i]===e.lyric[i]?'':py[i]}</rt><rp>)</rp>`
             }
             html += '</ruby>'
             lyric.lyric = html;

@@ -1,18 +1,11 @@
 @charset 'UTF-8';
 
 @font-face {
-    font-family: fangzhengsong;
-    src: url('/font/fzqkbys/font.woff2'),
-         url('/font/fzqkbys/font.woff'),
-         url('/font/fzqkbys/font.ttf');
-    font-display: swap;
-}
-
-@font-face {
-    font-family: ms-mincho;
-    src: url('/font/ms-mincho/font.woff2'),
-         url('/font/ms-mincho/font.woff'),
-         url('/font/ms-mincho/font.ttf');
+    font-family: SourceHanSerifCN-Heavy;
+    src: url('/font/SourceHanSerifCN-Heavy/font.woff2'),
+         url('/font/SourceHanSerifCN-Heavy/font.woff'),
+         url('/font/SourceHanSerifCN-Heavy/font.otf'),
+         url('/font/SourceHanSerifCN-Heavy/font.ttf');
     font-display: swap;
 }
 
