@@ -11,18 +11,10 @@ const kuromojiAnalyzer = new KuromojiAnalyzer();
 kuroshiro.init(kuromojiAnalyzer)
 
 const app = express();
-<<<<<<< HEAD
-=======
-
->>>>>>> master
 /*
 const cors = require("cors")
 app.use(cors())
 */
-<<<<<<< HEAD
-=======
-
->>>>>>> master
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '/public')));
 
