@@ -2,8 +2,8 @@
 console.log('望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
 const api = async (name, parm) => {
     let out = {}
-    // await fetch('http://localhost:3000/api/' + name, {
-    await fetch('/api/' + name, {
+    await fetch('http://localhost:3000/api/' + name, {
+    // await fetch('/api/' + name, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -172,7 +172,7 @@ export default {
                             element.style.display = 'auto';
                             setTimeout(() => {
                                 element.style.opacity = 1;
-                            }, 1)
+                            })
                         }
                     }
                 }
@@ -237,7 +237,7 @@ export default {
             setTimeout(() => {
                 element.style.opacity = 1;
                 element1.style.display = 'none';
-            }, 1)
+            })
             this.loading = false;
         },
         setMusicTime() {
@@ -289,7 +289,7 @@ export default {
                 element.style.display = 'block';
                 setTimeout(() => {
                     element.style.opacity = 1;
-                }, 1)
+                })
             } else {
                 element.style.opacity = 0;
                 setTimeout(() => {
@@ -634,6 +634,8 @@ footer {
 
 .searchInputGroup {
     display: flex;
+    justify-content: center;
+    width: 100%;
 }
 
 .searchInput {
