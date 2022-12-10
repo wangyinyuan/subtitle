@@ -2,8 +2,8 @@
 console.log('望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
 const api = async (name, parm) => {
     let out = {}
-    await fetch('http://localhost:3000/api/' + name, {
-    // await fetch('/api/' + name, {
+    // await fetch('http://localhost:3000/api/' + name, {
+    await fetch('/api/' + name, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
