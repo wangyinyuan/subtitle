@@ -69,16 +69,19 @@ export default {
                     this.searchTableShow = 1;
                     this.searchData = data.body.result.songs ? data.body.result.songs : [];
                 }
-            }else{
+            } else {
                 this.searchTableShow = false;
             }
         },
-        async subtitle(row) {
+        async subtitle(r, id, flag) {
+            let row = r;
+            if (flag === 1) {
+                row = await api('detail', { id })
+            }
             // 若不能播放
             if ((row.fee === 1 || row.fee === 4) && row.noCopyrightRcmd === 1) {
                 return;
             }
-
             this.loading = true;
 
             this.pinyinLyric = {
@@ -238,6 +241,7 @@ export default {
                 element.style.opacity = 1;
                 element1.style.display = 'none';
             })
+            history.pushState('', '', `${window.location.origin}/?play=${row.id}`);
             this.loading = false;
         },
         setMusicTime() {
@@ -268,6 +272,7 @@ export default {
             setTimeout(() => {
                 element.style.display = 'none';
             }, 500)
+            history.pushState('', '', window.location.origin)
             document.querySelector('title').innerText = '字幕'
         },
         async pinyinChange(val) {
@@ -296,6 +301,21 @@ export default {
                     element.style.display = 'none';
                 }, 500);
             }
+        },
+        clipLink() {
+            navigator && navigator.clipboard && navigator.clipboard.writeText(window.location.href).then(res => {
+                ElMessage({
+                    message: '复制成功！',
+                    type: 'success'
+                })
+            }).catch(err => {
+                ElMessage({
+                    message: `复制失败！错误信息：${err}`,
+                    type: 'success',
+                    duration:0,
+                    showClose: true
+                })
+            })
         }
     },
     computed: {
@@ -336,6 +356,18 @@ export default {
         },
     },
     created() {
+        const getQueryVariable = variable => {
+            let query = window.location.search.substring(1);
+            let vars = query.split("&");
+            for (let i = 0; i < vars.length; i++) {
+                let pair = vars[i].split("=");
+                if (pair[0] == variable) { return pair[1]; }
+            }
+            return (false);
+        }
+        if (getQueryVariable('play')) {
+            this.subtitle(0, getQueryVariable('play'), 1)
+        }
         let that = this
         const change = () => {
             that.screenWidth = document.body.clientWidth;
@@ -458,6 +490,9 @@ export default {
                                     :value="item.value" :disabled="item.disabled" />
                             </el-select>
                         </el-dropdown-item>
+                        <el-dropdown-item>
+                            <el-button type="primary" @click="clipLink">复制链接</el-button>
+                        </el-dropdown-item>
                     </el-dropdown-menu>
                 </template>
             </el-dropdown>
@@ -465,7 +500,9 @@ export default {
     </div>
 </template>
 <style>
-.f16{font-size: 16px;}
+.f16 {
+    font-size: 16px;
+}
 
 .gonganFooterP {
     display: flex;
@@ -512,7 +549,7 @@ footer {
     color: var(--el-text-color-regular);
 }
 
-.footerP > .el-link {
+.footerP>.el-link {
     font-size: 16px;
 }
 

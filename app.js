@@ -8,7 +8,7 @@ const Kuroshiro = require("kuroshiro");
 const KuromojiAnalyzer = require("kuroshiro-analyzer-kuromoji");
 const kuroshiro = new Kuroshiro();
 const kuromojiAnalyzer = new KuromojiAnalyzer();
-kuroshiro.init(kuromojiAnalyzer)
+kuroshiro.init(kuromojiAnalyzer);
 
 const app = express();
 /*
@@ -31,17 +31,36 @@ app.post('/api/search', async (req, res) => {
             type: 1,
             limit: 10
         })
-        if(result.body.result.songs){
+        if (result.body.result.songs) {
             const detail = await song_detail({
-                ids: result.body.result.songs.map(i=>i.id).join(',')
+                ids: result.body.result.songs.map(i => i.id).join(',')
             })
-            if(detail.status===200){
-                for(let i=0;i<result.body.result.songs.length;i++){
-                    result.body.result.songs[i].noCopyrightRcmd = detail.body.songs[i].noCopyrightRcmd===null?1:0
+            if (detail.status === 200) {
+                for (let i = 0; i < result.body.result.songs.length; i++) {
+                    result.body.result.songs[i].noCopyrightRcmd = detail.body.songs[i].noCopyrightRcmd === null ? 1 : 0
                 }
             }
         }
         res.json(result)
+    } catch (error) {
+        res.json(error)
+    }
+})
+
+app.post('/api/detail', async (req, res) => {
+    try {
+        const detail = await song_detail({
+            ids: `${req.body.id}`
+        })
+        if(detail.status!==200){
+            console.error(`请求歌曲详情错误！${detail.status}`)
+            res.json(`请求歌曲详情错误！${detail.status}`)
+        }else{
+            let song = detail.body.songs[0]
+            song.album = song.al
+            song.al=undefined;
+            res.json(song)
+        }
     } catch (error) {
         res.json(error)
     }
@@ -122,7 +141,7 @@ app.post('/api/pinyin/mandarin', (req, res) => {
             let html = '<ruby>'
             let py = pinyin(e.lyric, { type: 'array' })
             for (let i = 0; i < e.lyric.length; i++) {
-                html += `${e.lyric[i]}<rp>(</rp><rt>${py[i]===e.lyric[i]?'':py[i]}</rt><rp>)</rp>`
+                html += `${e.lyric[i]}<rp>(</rp><rt>${py[i] === e.lyric[i] ? '' : py[i]}</rt><rp>)</rp>`
             }
             html += '</ruby>'
             lyric.lyric = html;
@@ -143,10 +162,9 @@ app.post('/api/pinyin/cantonese', (req, res) => {
             let html = '<ruby>'
             let py = ToJyutping.getJyutpingList(e.lyric)
             for (let i = 0; i < e.lyric.length; i++) {
-                html += `${py[i][0]}<rp>(</rp><rt>${
-                    py[i][1]===null?'':
-                    parseInt(py[i][1].split(' ')[0].slice(-1))?`${py[i][1].split(' ')[0].slice(0,-1)}<sup>${py[i][1].split(' ')[0].slice(-1)}</sup>`:py[i][1].split(' ')[0]
-                }</rt><rp>)</rp>`
+                html += `${py[i][0]}<rp>(</rp><rt>${py[i][1] === null ? '' :
+                        parseInt(py[i][1].split(' ')[0].slice(-1)) ? `${py[i][1].split(' ')[0].slice(0, -1)}<sup>${py[i][1].split(' ')[0].slice(-1)}</sup>` : py[i][1].split(' ')[0]
+                    }</rt><rp>)</rp>`
             }
             html += '</ruby>'
             lyric.lyric = html;
