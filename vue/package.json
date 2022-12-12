@@ -9,6 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@iomariani/vue-player": "^0.5.3",
+    "@jhao413/vue-audio-player": "^1.0.8",
+    "aplayer": "^1.10.1",
     "element-plus": "^2.2.21",
     "music-tempo": "^1.0.3",
     "unplugin-auto-import": "^0.12.0",

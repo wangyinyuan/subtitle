@@ -1,6 +1,5 @@
 <script>
 console.log('望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
-
 const api = async (name, parm) => {
     let out = {}
     // await fetch('http://localhost:3000/api/' + name, {
@@ -58,7 +57,7 @@ export default {
                 jpHiragana: []
             },
             pinyin: 'none',
-            rhythm: false,// 是否在字幕界面 是否进行节奏判定
+            rhythm: false,// 是否进行过节奏判定
         }
     },
     methods: {
@@ -76,7 +75,7 @@ export default {
         },
         async rhythmBackground() {
             let start = 0
-            const animate = async(height, time)=>{
+            const animate = async (height, time) => {
                 let now = new Date()
                 if (now - start > time) {
                     document.querySelector('.colorBackgroundContainer').style.transform = `scale(${0.003 * height + 1.2})`
@@ -84,15 +83,18 @@ export default {
                 }
             }
             let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
             let audioSource = audioContext.createMediaElementSource(document.getElementById('music'));
+
             let analyser = audioContext.createAnalyser();
             audioSource.connect(analyser);
             analyser.connect(audioContext.destination);
+            await audioContext.resume();
             analyser.fftSize = 256;
             const bufferLength = analyser.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
             let barHeight, all;
-            const draw = ()=>{
+            const draw = () => {
                 all = 0
                 analyser.getByteFrequencyData(dataArray);
                 for (let i = 0; i < bufferLength; i++) {
@@ -117,7 +119,7 @@ export default {
             if ((row.fee === 1 || row.fee === 4) && row.noCopyrightRcmd === 1) {
                 return;
             }
-            this.rhythm = this.loading = true
+            this.loading = true
 
             this.pinyinLyric = {
                 mandarin: [],
@@ -126,7 +128,7 @@ export default {
                 jpHiragana: []
             }
             this.pinyin = 'none'
-            this.animationPlayState = document.getElementById('colorBackgroundChangeSwitch').disabled  = false
+            this.animationPlayState = document.getElementById('colorBackgroundChangeSwitch').disabled = false
 
             const promiseAlbum = api('album', { id: row.album.id });
             const promiseLyric = api('lyric', { id: row.id })
@@ -134,9 +136,20 @@ export default {
             const [lyric, songURL, album] = await Promise.all([promiseLyric, promiseSongURL, promiseAlbum])
             if (songURL.status === 200) {
                 const url = songURL.body.data[0].url.split(':').join('s:')
-                document.getElementById('musicPlayerContainer').innerHTML = '<audio id="music" controls preload="auto" crossorigin="anonymous" />'
+                document.getElementById('musicPlayerContainer').innerHTML = '<audio id="music" preload="auto" crossorigin="anonymous" />'
+                GreenAudioPlayer.init({
+                    selector: '#musicPlayerContainer',
+                    stopOthersOnPlay: true
+                })
                 document.getElementById('music').ontimeupdate = this.setMusicTime
                 document.getElementById('music').src = url
+                document.querySelector('.play-pause-btn').onclick = () => {
+                    // 如果正在播放
+                    if (!this.rhythm) {
+                        this.rhythmBackground()
+                        this.rhythm=true
+                    }
+                }
             } else {
                 this.loading = false;
                 ElMessage.error(`音乐获取失败！错误码：${songURL.status}`)
@@ -235,7 +248,6 @@ export default {
 
             let dom = document.getElementById('music');
             dom.onplay = () => {
-                this.rhythmBackground()
                 this.animationPlayState = true
                 // 全屏
                 if (document.documentElement.RequestFullScreen) {
@@ -342,7 +354,7 @@ export default {
             }
         },
         clipLink() {
-            navigator && navigator.clipboard && navigator.clipboard.writeText(window.location.href).then(()=> {
+            navigator && navigator.clipboard && navigator.clipboard.writeText(window.location.href).then(() => {
                 ElMessage({
                     message: '复制成功！',
                     type: 'success'
@@ -540,8 +552,8 @@ export default {
 </template>
 <style>
 #musicPlayerContainer {
-    display: flex;
     align-items: center;
+    border-radius: 40px;
 }
 
 .f16 {
