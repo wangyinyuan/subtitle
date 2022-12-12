@@ -1,5 +1,6 @@
 <script>
 console.log('望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
+
 const api = async (name, parm) => {
     let out = {}
     // await fetch('http://localhost:3000/api/' + name, {
@@ -12,7 +13,6 @@ const api = async (name, parm) => {
     }).then(response => response.json()).then(data => out = data);
     return out;
 }
-
 export default {
     data() {
         return {
@@ -20,7 +20,6 @@ export default {
             searchTableShow: 0,
             lyric: [],
             parsedLyric: [],
-            songURL: '',
             searchInput: undefined,
             play: false,
             musicTime: 0,
@@ -58,7 +57,8 @@ export default {
                 jpRoma: [],
                 jpHiragana: []
             },
-            pinyin: 'none'
+            pinyin: 'none',
+            rhythm: false,// 是否在字幕界面 是否进行节奏判定
         }
     },
     methods: {
@@ -68,10 +68,45 @@ export default {
                 if (data.status === 200) {
                     this.searchTableShow = 1;
                     this.searchData = data.body.result.songs ? data.body.result.songs : [];
+                    this.loading = false;
                 }
             } else {
                 this.searchTableShow = false;
             }
+        },
+        async rhythmBackground() {
+            let start = 0
+            const animate = async(height, time)=>{
+                let now = new Date()
+                if (now - start > time) {
+                    document.querySelector('.colorBackgroundContainer').style.transform = `scale(${0.003 * height + 1.2})`
+                    start = now
+                }
+            }
+            let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            let audioSource = audioContext.createMediaElementSource(document.getElementById('music'));
+            let analyser = audioContext.createAnalyser();
+            audioSource.connect(analyser);
+            analyser.connect(audioContext.destination);
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            let barHeight, all;
+            const draw = ()=>{
+                all = 0
+                analyser.getByteFrequencyData(dataArray);
+                for (let i = 0; i < bufferLength; i++) {
+                    barHeight = dataArray[i];
+                    all += barHeight
+                }
+                animate(all / bufferLength, 410)
+                if (!this.rhythm) {
+                    audioContext.close()
+                    return;
+                }
+                requestAnimationFrame(draw);
+            }
+            draw();
         },
         async subtitle(r, id, flag) {
             let row = r;
@@ -82,7 +117,7 @@ export default {
             if ((row.fee === 1 || row.fee === 4) && row.noCopyrightRcmd === 1) {
                 return;
             }
-            this.loading = true;
+            this.rhythm = this.loading = true
 
             this.pinyinLyric = {
                 mandarin: [],
@@ -91,15 +126,17 @@ export default {
                 jpHiragana: []
             }
             this.pinyin = 'none'
-            this.animationPlayState = false
-            document.getElementById('colorBackgroundChangeSwitch').disabled = false
+            this.animationPlayState = document.getElementById('colorBackgroundChangeSwitch').disabled  = false
 
             const promiseAlbum = api('album', { id: row.album.id });
             const promiseLyric = api('lyric', { id: row.id })
             const promiseSongURL = api('songURL', { id: row.id })
             const [lyric, songURL, album] = await Promise.all([promiseLyric, promiseSongURL, promiseAlbum])
             if (songURL.status === 200) {
-                this.songURL = songURL.body.data[0].url.split(':').join('s:')
+                const url = songURL.body.data[0].url.split(':').join('s:')
+                document.getElementById('musicPlayerContainer').innerHTML = '<audio id="music" controls preload="auto" crossorigin="anonymous" />'
+                document.getElementById('music').ontimeupdate = this.setMusicTime
+                document.getElementById('music').src = url
             } else {
                 this.loading = false;
                 ElMessage.error(`音乐获取失败！错误码：${songURL.status}`)
@@ -179,7 +216,7 @@ export default {
                         }
                     }
                 }
-                const background = async (url) => {
+                const background = async url => {
                     this.oldColorBackgroundVisible = Boolean(`${this.colorBackgroundVisible}`)
                     this.colorBackgroundVisible = false
                     let element = document.getElementsByClassName('colorBackground')[0]
@@ -198,6 +235,7 @@ export default {
 
             let dom = document.getElementById('music');
             dom.onplay = () => {
+                this.rhythmBackground()
                 this.animationPlayState = true
                 // 全屏
                 if (document.documentElement.RequestFullScreen) {
@@ -265,6 +303,7 @@ export default {
         back() {
             document.getElementById('music').pause();
             this.play = false;
+            this.rhythm = false
             let element = document.getElementsByClassName('play')[0]
             let element1 = document.getElementsByClassName('search')[0]
             element1.style.display = 'block';
@@ -303,7 +342,7 @@ export default {
             }
         },
         clipLink() {
-            navigator && navigator.clipboard && navigator.clipboard.writeText(window.location.href).then(res => {
+            navigator && navigator.clipboard && navigator.clipboard.writeText(window.location.href).then(()=> {
                 ElMessage({
                     message: '复制成功！',
                     type: 'success'
@@ -312,7 +351,7 @@ export default {
                 ElMessage({
                     message: `复制失败！错误信息：${err}`,
                     type: 'success',
-                    duration:0,
+                    duration: 0,
                     showClose: true
                 })
             })
@@ -363,10 +402,7 @@ export default {
                 let pair = vars[i].split("=");
                 if (pair[0] == variable) { return pair[1]; }
             }
-            return (false);
-        }
-        if (getQueryVariable('play')) {
-            this.subtitle(0, getQueryVariable('play'), 1)
+            return false;
         }
         let that = this
         const change = () => {
@@ -396,6 +432,9 @@ export default {
         window.onresize = () => {
             return change()
         };
+        if (getQueryVariable('play')) {
+            this.subtitle(0, getQueryVariable('play'), 1)
+        }
     }
 }
 </script>
@@ -467,7 +506,7 @@ export default {
         </div>
         <div class="playFooter">
             <el-button size="large" round @click="back">返回</el-button>
-            <audio id="music" :src="songURL" controls preload="auto" :ontimeupdate="setMusicTime" />
+            <div id="musicPlayerContainer"></div>
             <el-dropdown placement="top" trigger="click" class="settings">
                 <span class="el-dropdown-link">
                     <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"
@@ -500,6 +539,11 @@ export default {
     </div>
 </template>
 <style>
+#musicPlayerContainer {
+    display: flex;
+    align-items: center;
+}
+
 .f16 {
     font-size: 16px;
 }
@@ -622,13 +666,14 @@ footer {
     padding: 0;
     position: relative;
 
-    filter: blur(90px) brightness(85%) saturate(120%);
-    -webkit-filter: blur(90px) brightness(85%) saturate(120%);
-    -moz-filter: blur(90px) brightness(85%) saturate(120%);
-    -ms-filter: blur(90px) brightness(85%) saturate(120%);
-    -o-filter: blur(90px) brightness(85%) saturate(120%);
+    filter: blur(90px) brightness(85%) saturate(130%);
+    -webkit-filter: blur(90px) brightness(85%) saturate(130%);
+    -moz-filter: blur(90px) brightness(85%) saturate(130%);
+    -ms-filter: blur(90px) brightness(85%) saturate(130%);
+    -o-filter: blur(90px) brightness(85%) saturate(130%);
 
-    transform: scale(120%);
+    transform: scale(1.2);
+    transition: all 0.3s ease;
 }
 
 .colorBackground {
