@@ -48,6 +48,9 @@
 - 粤语注音:[to-jyutping](https://github.com/CanCLID/to-jyutping)
 - 普通话注音:[pinyin-pro](https://github.com/zh-lx/pinyin-pro)
 
+### 字体
+[思源宋体 CN Heavy](https://source.typekit.com/source-han-serif/cn/)
+
 
 
 总体上就是请求网易云音乐的api 获取歌词、歌曲url 进行展示
