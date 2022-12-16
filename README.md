@@ -3,11 +3,11 @@
 ## 功能
 
 ### 显示歌曲歌词
-![显示歌曲歌词](https://i.postimg.cc/G3HfgxvM/7e72c7e6e86e5db62a8f2cd834ff3a8.png)
+![显示歌曲歌词](https://i.postimg.cc/G3HfgxvM/7e72c7e6e86e5db62a8f2cd834ff3a8.png/?v=1)
 > 海のまにまに——YOASOBI
 
 ### 为歌词注音
-![为歌词注音](https://i.postimg.cc/8Cpvsst3/d51b36fe87a42cbe1ec7ed6fd505045.png)
+![为歌词注音](https://i.postimg.cc/8Cpvsst3/d51b36fe87a42cbe1ec7ed6fd505045.png/?v=1)
 > 喜欢你——邓紫棋
 
 ### 黑色背景（高对比度）
