@@ -373,6 +373,11 @@ export default {
                         time: +result[1] * 60 + +result[2] + +result[3] / 1000,
                         lyric: result[4].trim()
                     }
+                }else{
+                    return {
+                        time:0,
+                        lyric: line
+                    }
                 }
             }
             const lyric = this.lyric;
