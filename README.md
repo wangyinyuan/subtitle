@@ -15,7 +15,7 @@
 > 群青——YOASOBI
 
 ### 音频播放器
-![音频播放器](https://i.postimg.cc/65dxzhNk/954e3caeaa6215a2ff9aee60c5a76d5.png)
+![音频播放器](https://i.postimg.cc/bNFkC1HR/adb347cf06121aab613c0eaa464558b.png)
 > 群青——YOASOBI
 
 ## 灵感
