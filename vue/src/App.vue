@@ -1,4 +1,5 @@
 <script>
+import musicPlayer from './components/musicPlayer.vue'
 console.log('望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
 const api = async (name, parm) => {
     let out = {}
@@ -13,6 +14,9 @@ const api = async (name, parm) => {
     return out;
 }
 export default {
+    components: {
+        musicPlayer
+    },
     data() {
         return {
             searchData: [],
@@ -58,6 +62,7 @@ export default {
             },
             pinyin: 'none',
             rhythm: false,// 是否进行过节奏判定
+            mp_song: {}
         }
     },
     methods: {
@@ -66,7 +71,7 @@ export default {
                 const data = await api('search', { keywords: this.searchInput });
                 if (data.status === 200) {
                     this.searchTableShow = 1;
-                    this.searchData = data.body.result.songs ? data.body.result.songs : [];
+                    this.searchData = data.body.result.songs || [];
                     this.loading = false;
                 }
             } else {
@@ -115,6 +120,7 @@ export default {
             if (flag === 1) {
                 row = await api('detail', { id })
             }
+            this.mp_song.name = row.name
             // 若不能播放
             if ((row.fee === 1 || row.fee === 4) && row.noCopyrightRcmd === 1) {
                 return;
@@ -128,26 +134,22 @@ export default {
                 jpHiragana: []
             }
             this.pinyin = 'none'
-            this.animationPlayState = document.getElementById('colorBackgroundChangeSwitch').disabled = false
-
+            const colorBackgroundChangeSwitch = document.getElementById('colorBackgroundChangeSwitch')
+            this.animationPlayState = colorBackgroundChangeSwitch.disabled = false
             const promiseAlbum = api('album', { id: row.album.id });
             const promiseLyric = api('lyric', { id: row.id })
             const promiseSongURL = api('songURL', { id: row.id })
             const [lyric, songURL, album] = await Promise.all([promiseLyric, promiseSongURL, promiseAlbum])
             if (songURL.status === 200) {
                 const url = songURL.body.data[0].url.split(':').join('s:')
-                document.getElementById('musicPlayerContainer').innerHTML = '<audio id="music" preload="auto" crossorigin="anonymous" />'
-                GreenAudioPlayer.init({
-                    selector: '#musicPlayerContainer',
-                    stopOthersOnPlay: true
-                })
-                document.getElementById('music').ontimeupdate = this.setMusicTime
-                document.getElementById('music').src = url
-                document.querySelector('.play-pause-btn').onclick = () => {
+                this.mp_song.src = url
+                const plyContainer = document.getElementById('musicPlayerContainer')
+                plyContainer.innerHTML = `<audio id="music" preload="auto" src="${url}" crossorigin="anonymous" />`
+                document.querySelector('.musicPlayer_buttons').onclick = () => {
                     // 如果正在播放
                     if (!this.rhythm) {
                         this.rhythmBackground()
-                        this.rhythm=true
+                        this.rhythm = true
                     }
                 }
             } else {
@@ -165,6 +167,7 @@ export default {
             }
             if (album.status === 200) {
                 let albumCover = album.body.songs[0].al.picUrl;
+                this.mp_song.cover = albumCover
                 let that = this;
                 class SplitImage {
                     constructor(options) {
@@ -187,7 +190,6 @@ export default {
                                 resolve()
                             }
                             img.onerror = (e) => {
-                                console.error(`专辑图片加载错误！错误信息：${e}`)
                                 ElMessage({
                                     type: 'error',
                                     message: `专辑图片加载错误！错误信息：${e}`,
@@ -221,7 +223,7 @@ export default {
                         }
                         that.colorBackgroundVisible = that.oldColorBackgroundVisible
                         if (that.colorBackgroundVisible) {
-                            let element = document.getElementsByClassName('colorBackground')[0]
+                            let element = document.querySelector('.colorBackground')
                             element.style.display = 'auto';
                             setTimeout(() => {
                                 element.style.opacity = 1;
@@ -232,7 +234,7 @@ export default {
                 const background = async url => {
                     this.oldColorBackgroundVisible = Boolean(`${this.colorBackgroundVisible}`)
                     this.colorBackgroundVisible = false
-                    let element = document.getElementsByClassName('colorBackground')[0]
+                    let element = document.querySelector('.colorBackground')
                     element.style.opacity = 0;
                     new SplitImage({
                         row: 2,
@@ -242,50 +244,13 @@ export default {
                 }
                 background(albumCover)
             } else {
-                document.getElementById('colorBackgroundChangeSwitch').disabled = true;
+                colorBackgroundChangeSwitch.disabled = true;
                 ElMessage.error(`专辑获取错误！错误码：${album.status}`)
-            }
-
-            let dom = document.getElementById('music');
-            dom.onplay = () => {
-                this.animationPlayState = true
-                // 全屏
-                if (document.documentElement.RequestFullScreen) {
-                    document.documentElement.RequestFullScreen();
-                }
-                if (document.documentElement.mozRequestFullScreen) {
-                    document.documentElement.mozRequestFullScreen();
-                }
-                if (document.documentElement.webkitRequestFullScreen) {
-                    document.documentElement.webkitRequestFullScreen();
-                }
-                if (document.documentElement.msRequestFullscreen) {
-                    document.documentElement.msRequestFullscreen();
-                }
-            }
-            dom.onpause = () => {
-                this.animationPlayState = false
-                // 取消全屏
-                if (document.exitFullScreen) {
-                    document.exitFullscreen()
-                }
-                //火狐
-                if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen()
-                }
-                //谷歌
-                if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen()
-                }
-                //IE
-                if (document.msExitFullscreen) {
-                    document.msExitFullscreen()
-                }
             }
             document.querySelector('title').innerText = `${row.name} - 字幕`
             this.play = true;
-            let element = document.getElementsByClassName('play')[0]
-            let element1 = document.getElementsByClassName('search')[0]
+            let element = document.querySelector('.play')
+            let element1 = document.querySelector('.search')
             element.style.display = 'flex';
             setTimeout(() => {
                 element.style.opacity = 1;
@@ -314,6 +279,21 @@ export default {
         },
         back() {
             document.getElementById('music').pause();
+            if (document.exitFullScreen) {
+                document.exitFullscreen()
+            }
+            //火狐
+            if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen()
+            }
+            //谷歌
+            if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen()
+            }
+            //IE
+            if (document.msExitFullscreen) {
+                document.msExitFullscreen()
+            }
             this.play = false;
             this.rhythm = false
             let element = document.getElementsByClassName('play')[0]
@@ -340,7 +320,7 @@ export default {
             }
         },
         backgorundChange(val) {
-            let element = document.getElementsByClassName('colorBackground')[0]
+            let element = document.querySelector('.colorBackground')
             if (val) {
                 element.style.display = 'block';
                 setTimeout(() => {
@@ -362,7 +342,7 @@ export default {
             }).catch(err => {
                 ElMessage({
                     message: `复制失败！错误信息：${err}`,
-                    type: 'success',
+                    type: 'error',
                     duration: 0,
                     showClose: true
                 })
@@ -386,10 +366,10 @@ export default {
         parseLyric() {
             const parseLyricLine = line => {
                 const lyricExp = /^\[(\d*):(\d*).(\d*)\](.*)/;
-                let result;
-                if ((result = line.match(lyricExp)) !== null) {
+                let result = line.match(lyricExp);
+                if (result !== null) {
                     return {
-                        //转换时间和audio.currentTime相同
+                        //转换时间以秒计
                         time: +result[1] * 60 + +result[2] + +result[3] / 1000,
                         lyric: result[4].trim()
                     }
@@ -423,22 +403,14 @@ export default {
             that.colorImageSize[0] = Math.max(that.screenHeight, that.screenWidth) / 2
             that.colorImageSize[1] = that.colorImageSize[0] * Math.sqrt(2)
             const margin = -((that.colorImageSize[1] - that.colorImageSize[0]) / 2);
-            that.colorBackgroundImage = [{
-                left: margin,
-                top: margin
-            },
-            {
-                left: margin + that.colorImageSize[0],
-                top: margin
-            },
-            {
-                left: margin,
-                top: margin + that.colorImageSize[0]
-            },
-            {
-                left: margin + that.colorImageSize[0],
-                top: margin + that.colorImageSize[0]
-            }]
+            that.colorBackgroundImage = []
+            for (let i = 0; i < 4; i++) {
+                const space = i.toString(2).length === 1 ? 0 + i.toString(2) : i.toString(2)
+                that.colorBackgroundImage.push({
+                    top: margin + (+space[0]) * that.colorImageSize[0],
+                    left: margin + (+space[1]) * that.colorImageSize[0]
+                })
+            }
         }
         change()
         window.onresize = () => {
@@ -517,36 +489,41 @@ export default {
                 v-show="isThisLyric(index)" v-html="item.lyric"></span>
         </div>
         <div class="playFooter">
-            <el-button size="large" round @click="back">返回</el-button>
-            <div id="musicPlayerContainer"></div>
-            <el-dropdown placement="top" trigger="click" class="settings">
-                <span class="el-dropdown-link">
-                    <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"
-                        style="color:rgb(84 84 84);width:30px;height:30px">
-                        <path fill="currentColor"
-                            d="M600.704 64a32 32 0 0 1 30.464 22.208l35.2 109.376c14.784 7.232 28.928 15.36 42.432 24.512l112.384-24.192a32 32 0 0 1 34.432 15.36L944.32 364.8a32 32 0 0 1-4.032 37.504l-77.12 85.12a357.12 357.12 0 0 1 0 49.024l77.12 85.248a32 32 0 0 1 4.032 37.504l-88.704 153.6a32 32 0 0 1-34.432 15.296L708.8 803.904c-13.44 9.088-27.648 17.28-42.368 24.512l-35.264 109.376A32 32 0 0 1 600.704 960H423.296a32 32 0 0 1-30.464-22.208L357.696 828.48a351.616 351.616 0 0 1-42.56-24.64l-112.32 24.256a32 32 0 0 1-34.432-15.36L79.68 659.2a32 32 0 0 1 4.032-37.504l77.12-85.248a357.12 357.12 0 0 1 0-48.896l-77.12-85.248A32 32 0 0 1 79.68 364.8l88.704-153.6a32 32 0 0 1 34.432-15.296l112.32 24.256c13.568-9.152 27.776-17.408 42.56-24.64l35.2-109.312A32 32 0 0 1 423.232 64H600.64zm-23.424 64H446.72l-36.352 113.088-24.512 11.968a294.113 294.113 0 0 0-34.816 20.096l-22.656 15.36-116.224-25.088-65.28 113.152 79.68 88.192-1.92 27.136a293.12 293.12 0 0 0 0 40.192l1.92 27.136-79.808 88.192 65.344 113.152 116.224-25.024 22.656 15.296a294.113 294.113 0 0 0 34.816 20.096l24.512 11.968L446.72 896h130.688l36.48-113.152 24.448-11.904a288.282 288.282 0 0 0 34.752-20.096l22.592-15.296 116.288 25.024 65.28-113.152-79.744-88.192 1.92-27.136a293.12 293.12 0 0 0 0-40.256l-1.92-27.136 79.808-88.128-65.344-113.152-116.288 24.96-22.592-15.232a287.616 287.616 0 0 0-34.752-20.096l-24.448-11.904L577.344 128zM512 320a192 192 0 1 1 0 384 192 192 0 0 1 0-384zm0 64a128 128 0 1 0 0 256 128 128 0 0 0 0-256z">
-                        </path>
-                    </svg>
-                </span>
-                <template #dropdown>
-                    <el-dropdown-menu>
-                        <el-dropdown-item>
-                            <el-switch id="colorBackgroundChangeSwitch" v-model="colorBackgroundVisible" size="large"
-                                active-text="彩色背景" inactive-text="黑色背景" style="width:100%" @change="backgorundChange" />
-                        </el-dropdown-item>
-                        <el-dropdown-item>
-                            <el-select v-model="pinyin" class="m-2" placeholder="注音" size="large"
-                                @change="pinyinChange">
-                                <el-option v-for="item in pinyinOptions" :key="item.value" :label="item.label"
-                                    :value="item.value" :disabled="item.disabled" />
-                            </el-select>
-                        </el-dropdown-item>
-                        <el-dropdown-item>
-                            <el-button type="primary" @click="clipLink">复制链接</el-button>
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </template>
-            </el-dropdown>
+            <!-- <div id="musicPlayerContainer"></div> -->
+            <musicPlayer :song="mp_song">
+                <div class="settings" @click="back">
+                    <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;"><path fill="currentColor" d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"></path><path fill="currentColor" d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"></path></svg>
+                </div>
+                <el-dropdown placement="top" trigger="click" class="settings">
+                    <span class="el-dropdown-link">
+                        <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"
+                            style="color:rgb(84 84 84);width:20px;height:20px">
+                            <path fill="currentColor"
+                                d="M600.704 64a32 32 0 0 1 30.464 22.208l35.2 109.376c14.784 7.232 28.928 15.36 42.432 24.512l112.384-24.192a32 32 0 0 1 34.432 15.36L944.32 364.8a32 32 0 0 1-4.032 37.504l-77.12 85.12a357.12 357.12 0 0 1 0 49.024l77.12 85.248a32 32 0 0 1 4.032 37.504l-88.704 153.6a32 32 0 0 1-34.432 15.296L708.8 803.904c-13.44 9.088-27.648 17.28-42.368 24.512l-35.264 109.376A32 32 0 0 1 600.704 960H423.296a32 32 0 0 1-30.464-22.208L357.696 828.48a351.616 351.616 0 0 1-42.56-24.64l-112.32 24.256a32 32 0 0 1-34.432-15.36L79.68 659.2a32 32 0 0 1 4.032-37.504l77.12-85.248a357.12 357.12 0 0 1 0-48.896l-77.12-85.248A32 32 0 0 1 79.68 364.8l88.704-153.6a32 32 0 0 1 34.432-15.296l112.32 24.256c13.568-9.152 27.776-17.408 42.56-24.64l35.2-109.312A32 32 0 0 1 423.232 64H600.64zm-23.424 64H446.72l-36.352 113.088-24.512 11.968a294.113 294.113 0 0 0-34.816 20.096l-22.656 15.36-116.224-25.088-65.28 113.152 79.68 88.192-1.92 27.136a293.12 293.12 0 0 0 0 40.192l1.92 27.136-79.808 88.192 65.344 113.152 116.224-25.024 22.656 15.296a294.113 294.113 0 0 0 34.816 20.096l24.512 11.968L446.72 896h130.688l36.48-113.152 24.448-11.904a288.282 288.282 0 0 0 34.752-20.096l22.592-15.296 116.288 25.024 65.28-113.152-79.744-88.192 1.92-27.136a293.12 293.12 0 0 0 0-40.256l-1.92-27.136 79.808-88.128-65.344-113.152-116.288 24.96-22.592-15.232a287.616 287.616 0 0 0-34.752-20.096l-24.448-11.904L577.344 128zM512 320a192 192 0 1 1 0 384 192 192 0 0 1 0-384zm0 64a128 128 0 1 0 0 256 128 128 0 0 0 0-256z">
+                            </path>
+                        </svg>
+                    </span>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item>
+                                <el-switch id="colorBackgroundChangeSwitch" v-model="colorBackgroundVisible"
+                                    size="large" active-text="彩色背景" inactive-text="黑色背景" style="width:100%"
+                                    @change="backgorundChange" />
+                            </el-dropdown-item>
+                            <el-dropdown-item>
+                                <el-select v-model="pinyin" class="m-2" placeholder="注音" size="large"
+                                    @change="pinyinChange">
+                                    <el-option v-for="item in pinyinOptions" :key="item.value" :label="item.label"
+                                        :value="item.value" :disabled="item.disabled" />
+                                </el-select>
+                            </el-dropdown-item>
+                            <el-dropdown-item>
+                                <el-button type="primary" @click="clipLink">复制链接</el-button>
+                            </el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
+            </musicPlayer>
         </div>
     </div>
 </template>
@@ -586,14 +563,15 @@ ruby>rt {
 }
 
 .settings {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     background-color: white;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
+    border: 1px solid black;
 }
 
 footer {
@@ -755,9 +733,7 @@ body::-webkit-scrollbar {
 
 body {
     scrollbar-width: none;
-    /* firefox */
     -ms-overflow-style: none;
-    /* IE 10+ */
 }
 
 body::-webkit-scrollbar {
