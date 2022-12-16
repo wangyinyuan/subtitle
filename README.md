@@ -3,15 +3,19 @@
 ## 功能
 
 ### 显示歌曲歌词
-![效果图](https://i.postimg.cc/0NrLfBhk/1c6ea60bfac4a2ff79d0635abae1b12.png)
+![显示歌曲歌词](https://i.postimg.cc/G3HfgxvM/7e72c7e6e86e5db62a8f2cd834ff3a8.png)
 > 海のまにまに——YOASOBI
 
 ### 为歌词注音
-![效果图](https://i.postimg.cc/Gh2VrNhk/521880694645e14a1fb35f40d6b1fff.png)
+![为歌词注音](https://i.postimg.cc/8Cpvsst3/d51b36fe87a42cbe1ec7ed6fd505045.png)
 > 喜欢你——邓紫棋
 
 ### 黑色背景（高对比度）
-![效果图](https://i.postimg.cc/6QjzH6ng/186ea874dc0aa82a72367cbf0c69f18.png)
+![黑色背景（高对比度）](https://i.postimg.cc/jjM8ZD20/d7375f667283f6183ad5561a8b7c703.png)
+> 群青——YOASOBI
+
+### 音频播放器
+![音频播放器](https://i.postimg.cc/2yh7Ryk5/7c1f892fb005ddb412fb19068f7d0ed.jpg)
 > 群青——YOASOBI
 
 ## 灵感

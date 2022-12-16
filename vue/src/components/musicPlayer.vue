@@ -49,13 +49,6 @@ export default {
                         document.documentElement.msRequestFullscreen();
                     }
                 }
-                dom.ontimeupdate = async () => {
-                    this.changeAudioTime()
-                    this.progress = parseInt(dom.currentTime / await this.countAudioTime(dom) * 100)
-                    this.$parent.setMusicTime()
-                }
-            } else {
-                dom.pause()
                 dom.onpause = () => {
                     this.play = false
                     this.$parent.animationPlayState = false
@@ -76,6 +69,13 @@ export default {
                         document.msExitFullscreen()
                     }
                 }
+                dom.ontimeupdate = () => {
+                    this.changeAudioTime()
+                    this.progress = parseInt(dom.currentTime / dom.duration * 100)
+                    this.$parent.setMusicTime()
+                }
+            } else {
+                dom.pause()
             }
         },
         parseNumber(number) {
@@ -95,14 +95,12 @@ export default {
                 this.play = false;
                 this.oldEle = dom
             }
-            const nowTime = this.newtime(parseInt(dom.currentTime))
-            const lostTime = `-${this.newtime(parseInt(await this.countAudioTime(dom) - dom.currentTime))}`
-            document.getElementById('musicPlayer_timenow').innerText = nowTime
-            document.getElementById('musicPlayer_timelost').innerText = lostTime
+            const time = `${this.newtime(parseInt(dom.currentTime))}`
+            document.getElementById('musicPlayer_time').innerText = time
         },
         async changeTime() {
             let dom = document.getElementById('music')
-            dom.currentTime = this.progress / 100 * await this.countAudioTime(dom)
+            dom.currentTime = this.progress / 100 * dom.duration
         },
         changeVolume() {
             let dom = document.getElementById('music')
@@ -112,13 +110,6 @@ export default {
             this.sound = this.sound ? 0 : 100
             this.changeVolume()
         },
-        async countAudioTime(audio) {
-            while (isNaN(audio.duration) || audio.duration === Infinity) {
-                await new Promise(resolve => setTimeout(resolve, 200));
-                audio.currentTime = 10000000 * Math.random();
-            }
-            return audio.duration
-        }
     },
     created() {
         document.documentElement.style.setProperty('--musicPlayer-width', this.width + 'px')
@@ -167,9 +158,10 @@ export default {
                     <el-slider class="musicPlayer_progressSlider" v-model="progress" :show-tooltip="false"
                         @input="changeTime" />
                     <div class="musicPlayer_progressNumber">
-                        <span id="musicPlayer_timenow">0:00</span>
-                        <slot></slot>
-                        <span id="musicPlayer_timelost">-2:30</span>
+                        <span id="musicPlayer_time">0:00/-2:30</span>
+                        <div class="musicPlayer_settings">
+                            <slot></slot>
+                        </div>
                     </div>
                 </div>
 
@@ -269,18 +261,29 @@ export default {
     left: 0;
     width: 30px;
     cursor: pointer;
+    color: rgb(80, 80, 80);
 }
 
 .musicPlayer_progressSlider {
     width: 100%;
+    margin-top: -2px
 }
 
 .musicPlayer_progressNumber {
     display: flex;
-    align-items:center;
+    align-items: center;
     justify-content: space-between;
     line-height: normal;
-    margin-bottom: 13px;
     color: rgb(128, 128, 128);
+    margin-top: -10px;
+}
+
+#musicPlayer_time {
+    color: #4a4a4a;
+}
+
+.musicPlayer_settings {
+    display:flex;
+    gap:5px;
 }
 </style>
