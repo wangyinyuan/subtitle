@@ -334,19 +334,38 @@ export default {
             }
         },
         clipLink() {
-            navigator && navigator.clipboard && navigator.clipboard.writeText(window.location.href).then(() => {
-                ElMessage({
-                    message: '复制成功！',
-                    type: 'success'
+            fetch('https://ceek.fun/create', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    url: window.location.href
                 })
-            }).catch(err => {
-                ElMessage({
-                    message: `复制失败！错误信息：${err}`,
-                    type: 'error',
-                    duration: 0,
-                    showClose: true
-                })
-            })
+            }).then(response => response.json()).then(data => {
+                if (data.code) {
+                    navigator && navigator.clipboard && navigator.clipboard.writeText(`https://ceek.fun/${data.url}`).then(() => {
+                        ElMessage({
+                            message: '复制成功！',
+                            type: 'success'
+                        })
+                    }).catch(err => {
+                        ElMessage({
+                            message: `复制失败！错误信息：${err}`,
+                            type: 'error',
+                            duration: 0,
+                            showClose: true
+                        })
+                    })
+                } else {
+                    ElMessage({
+                        message: `复制失败：请求短网址API错误！错误信息：${data.msg}`,
+                        type: 'error',
+                        duration: 0,
+                        showClose: true
+                    })
+                }
+            });
         }
     },
     computed: {
@@ -373,9 +392,9 @@ export default {
                         time: +result[1] * 60 + +result[2] + +result[3] / 1000,
                         lyric: result[4].trim()
                     }
-                }else{
+                } else {
                     return {
-                        time:0,
+                        time: 0,
                         lyric: line
                     }
                 }
@@ -497,7 +516,12 @@ export default {
             <!-- <div id="musicPlayerContainer"></div> -->
             <musicPlayer :song="mp_song">
                 <div class="settings" @click="back">
-                    <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;"><path fill="currentColor" d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"></path><path fill="currentColor" d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"></path></svg>
+                    <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;">
+                        <path fill="currentColor" d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"></path>
+                        <path fill="currentColor"
+                            d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z">
+                        </path>
+                    </svg>
                 </div>
                 <el-dropdown placement="top" trigger="click" class="settings">
                     <span class="el-dropdown-link">
@@ -721,6 +745,7 @@ footer {
 
 .search {
     z-index: 1;
+    height: 100%;
 }
 
 body {

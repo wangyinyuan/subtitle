@@ -158,7 +158,7 @@ export default {
                     <el-slider class="musicPlayer_progressSlider" v-model="progress" :show-tooltip="false"
                         @input="changeTime" />
                     <div class="musicPlayer_progressNumber">
-                        <span id="musicPlayer_time">0:00/-2:30</span>
+                        <span id="musicPlayer_time">0:00</span>
                         <div class="musicPlayer_settings">
                             <slot></slot>
                         </div>
