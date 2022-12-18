@@ -1,5 +1,6 @@
 <script>
 import musicPlayer from './components/musicPlayer.vue'
+import copy from 'copy-to-clipboard'
 console.log('望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
 const api = async (name, parm) => {
     let out = {}
@@ -62,7 +63,8 @@ export default {
             },
             pinyin: 'none',
             rhythm: false,// 是否进行过节奏判定
-            mp_song: {}
+            mp_song: {},
+            shareLink: ''
         }
     },
     methods: {
@@ -134,6 +136,7 @@ export default {
                 jpHiragana: []
             }
             this.pinyin = 'none'
+            this.shareLink = ''
             const colorBackgroundChangeSwitch = document.getElementById('colorBackgroundChangeSwitch')
             this.animationPlayState = colorBackgroundChangeSwitch.disabled = false
             const promiseAlbum = api('album', { id: row.album.id });
@@ -333,39 +336,34 @@ export default {
                 }, 500);
             }
         },
-        clipLink() {
-            fetch('https://ceek.fun/create', {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    url: window.location.href
-                })
-            }).then(response => response.json()).then(data => {
-                if (data.code) {
-                    navigator && navigator.clipboard && navigator.clipboard.writeText(`https://ceek.fun/${data.url}`).then(() => {
+        async clipLink() {
+            if (this.shareLink === '') {
+                await fetch('https://ceek.fun/create', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        url: window.location.href
+                    })
+                }).then(response => response.json()).then(data => {
+                    if (data.code) {
+                        this.shareLink = `https://ceek.fun/${data.url}`
+                    } else {
                         ElMessage({
-                            message: '复制成功！',
-                            type: 'success'
-                        })
-                    }).catch(err => {
-                        ElMessage({
-                            message: `复制失败！错误信息：${err}`,
+                            message: `复制失败：请求短网址API错误！错误信息：${data.msg}`,
                             type: 'error',
                             duration: 0,
                             showClose: true
                         })
-                    })
-                } else {
-                    ElMessage({
-                        message: `复制失败：请求短网址API错误！错误信息：${data.msg}`,
-                        type: 'error',
-                        duration: 0,
-                        showClose: true
-                    })
-                }
-            });
+                    }
+                });
+            }
+            copy(this.shareLink)
+            ElMessage({
+                message: '复制成功！',
+                type: 'success'
+            })
         }
     },
     computed: {
@@ -547,7 +545,7 @@ export default {
                                 </el-select>
                             </el-dropdown-item>
                             <el-dropdown-item>
-                                <el-button type="primary" @click="clipLink">复制链接</el-button>
+                                <el-button id="copyLinkButton" type="primary" @click="clipLink">复制链接</el-button>
                             </el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
