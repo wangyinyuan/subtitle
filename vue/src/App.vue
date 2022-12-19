@@ -467,7 +467,7 @@ export default {
             </el-table>
         </div>
         <footer>
-            <p class="footerP">高晟捷，版权所有</p>
+            <p class="footerP">高晟捷，版权所有。以MIT协议开源 <el-link href="https://github.com/huangguacucumber/subtitle" target="_blank">GitHub</el-link></p>
             <p class="footerP">
                 <el-link href="https://beian.miit.gov.cn/" target="_blank">鲁ICP备2022004418号-2</el-link>
             </p>
@@ -495,7 +495,7 @@ export default {
         </div>
         <div class="colorBackground background">
             <div class="colorBackgroundContainer">
-                <canvas class="colorBackgroundImage" v-for="(e, i) in [0, 0, 0, 0]" :id="`colorBackgroundImage${i}`"
+                <canvas class="colorBackgroundImage" v-for="(e, i) in [0, 1, 2, 3]" :id="`colorBackgroundImage${i}`"
                     :style="`
                     width:${colorImageSize[1]}px;
                     height:${colorImageSize[1]}px;
