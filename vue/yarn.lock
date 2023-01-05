@@ -531,7 +531,7 @@
   "resolved" "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-3.3.0.tgz"
   "version" "3.3.0"
 
-"eslint@^6.2.0 || ^7.0.0 || ^8.0.0", "eslint@^8.30.0", "eslint@>=5", "eslint@>=6.0.0":
+"eslint@^6.2.0 || ^7.0.0 || ^8.0.0", "eslint@>=5", "eslint@>=6.0.0":
   "integrity" "sha512-MGADB39QqYuzEGov+F/qb18r4i7DohCDOfatHaxI2iGlPuC65bwG2gxgO+7DkyL38dRFaRH7RaRAgU6JKL9rMQ=="
   "resolved" "https://registry.npmjs.org/eslint/-/eslint-8.30.0.tgz"
   "version" "8.30.0"

@@ -64,7 +64,7 @@ export default {
             pinyin: 'none',
             rhythm: false,// 是否进行过节奏判定
             mp_song: {},
-            shareLink: ''
+            shareLink: '',
         }
     },
     methods: {
@@ -163,6 +163,11 @@ export default {
             if (lyric.status === 200) {
                 this.lyric = lyric.body.lrc.lyric;
                 this.parsedLyric = this.parseLyric;
+                // 解决Safari下注音不贴字的问题
+                if (navigator.vendor === "Apple Computer, Inc.") {
+                    // 是Apple系
+                    document.querySelector('.lyricList').classList.add('safariLyricList')
+                }
             } else {
                 this.loading = false;
                 ElMessage.error(`歌词获取失败！错误码：${lyric.status}`);
@@ -276,9 +281,9 @@ export default {
                 i++
             }
             if (musicTime >= lyricTime && (index === this.parsedLyric.length - 1 || musicTime < nextTime)) {
-                return 1;
+                return true
             }
-            return 0
+            return false
         },
         back() {
             document.getElementById('music').pause();
@@ -467,7 +472,8 @@ export default {
             </el-table>
         </div>
         <footer>
-            <p class="footerP">高晟捷，版权所有。以MIT协议开源 <el-link href="https://github.com/huangguacucumber/subtitle" target="_blank">GitHub</el-link></p>
+            <p class="footerP">高晟捷，版权所有。以MIT协议开源 <el-link href="https://github.com/huangguacucumber/subtitle"
+                    target="_blank">GitHub</el-link></p>
             <p class="footerP">
                 <el-link href="https://beian.miit.gov.cn/" target="_blank">鲁ICP备2022004418号-2</el-link>
             </p>
@@ -640,6 +646,10 @@ footer {
     -moz-osx-font-smoothing: antialiased;
     -webkit-font-smoothing: antialiased;
 }
+/* Safari注音不贴字问题 */
+.safariLyricList > span > ruby > rt{
+    transform: translateY(2vw);
+}
 
 .lyricList>span {
     text-align: left;
@@ -713,7 +723,7 @@ footer {
     top: 0;
     right: 0;
     color: white;
-    line-height: 8vw;
+    line-height: 9vw;
     transition: opacity .5s ease;
     opacity: 0;
     z-index: 20;
