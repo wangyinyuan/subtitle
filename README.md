@@ -58,8 +58,8 @@
 - 普通话注音:[pinyin-pro](https://github.com/zh-lx/pinyin-pro)
 
 ### 字体
-[Noto Serif Simplified Chinese](https://fonts.google.com/noto/specimen/Noto+Serif+SC)
-[Noto Serif Korean](https://fonts.google.com/noto/specimen/Noto+Serif+KR)
+- [Noto Serif Simplified Chinese](https://fonts.google.com/noto/specimen/Noto+Serif+SC)
+- [Noto Serif Korean](https://fonts.google.com/noto/specimen/Noto+Serif+KR)
 
 
 
