@@ -139,10 +139,11 @@ export default {
             this.shareLink = ''
             const colorBackgroundChangeSwitch = document.getElementById('colorBackgroundChangeSwitch')
             this.animationPlayState = colorBackgroundChangeSwitch.disabled = false
-            const promiseAlbum = api('album', { id: row.album.id });
+
             const promiseLyric = api('lyric', { id: row.id })
             const promiseSongURL = api('songURL', { id: row.id })
-            const [lyric, songURL, album] = await Promise.all([promiseLyric, promiseSongURL, promiseAlbum])
+            const [lyric, songURL] = await Promise.all([promiseLyric, promiseSongURL])
+
             if (songURL.status === 200) {
                 const url = songURL.body.data[0].url.split(':').join('s:')
                 this.mp_song.src = url
@@ -173,88 +174,85 @@ export default {
                 ElMessage.error(`歌词获取失败！错误码：${lyric.status}`);
                 return;
             }
-            if (album.status === 200) {
-                let albumCover = album.body.songs[0].al.picUrl;
-                this.mp_song.cover = albumCover
-                let that = this;
-                class SplitImage {
-                    constructor(options) {
-                        this.options = options
-                        this.input = null
-                        this.canvas = null
-                        this.ctx = null
-                        this.img = null
-                        this.simpleWidth = 0
-                        this.simpleHeight = 0
-                        this.createImg(this.options.base64)
-                    }
-                    createImg(base64) {
-                        return new Promise((resolve, reject) => {
-                            const img = new Image()
-                            img.src = base64
-                            img.onload = () => {
-                                this.img = img
-                                this.splitImg()
-                                resolve()
-                            }
-                            img.onerror = (e) => {
-                                ElMessage({
-                                    type: 'error',
-                                    message: `专辑图片加载错误！错误信息：${e}`,
-                                    duration: 0,
-                                    showClose: true
-                                })
-                                reject(e)
-                            }
-                        })
-                    }
-                    drawImg(options) {
-                        this.canvas.width = this.simpleWidth
-                        this.canvas.height = this.simpleHeight
-                        this.ctx.drawImage(this.img, options.x, options.y, this.simpleWidth, this.simpleHeight, 0, 0, this.simpleWidth, this.simpleHeight)
-                    }
-
-                    splitImg() {
-                        this.simpleWidth = this.img.width / this.options.col
-                        this.simpleHeight = this.img.height / this.options.row
-                        let i = 0
-                        for (let y = 0; y < this.options.row; y++) {
-                            for (let x = 0; x < this.options.col; x++) {
-                                this.canvas = document.getElementById(`colorBackgroundImage${i}`)
-                                this.ctx = this.canvas.getContext('2d')
-                                this.drawImg({
-                                    x: x * this.simpleWidth,
-                                    y: y * this.simpleHeight
-                                })
-                                i++;
-                            }
-                        }
-                        that.colorBackgroundVisible = that.oldColorBackgroundVisible
-                        if (that.colorBackgroundVisible) {
-                            let element = document.querySelector('.colorBackground')
-                            element.style.display = 'auto';
-                            setTimeout(() => {
-                                element.style.opacity = 1;
-                            })
-                        }
-                    }
+            //专辑封面处理start
+            let albumCover = row.albumCover;
+            this.mp_song.cover = albumCover
+            let that = this;
+            class SplitImage {
+                constructor(options) {
+                    this.options = options
+                    this.input = null
+                    this.canvas = null
+                    this.ctx = null
+                    this.img = null
+                    this.simpleWidth = 0
+                    this.simpleHeight = 0
+                    this.createImg(this.options.base64)
                 }
-                const background = async url => {
-                    this.oldColorBackgroundVisible = Boolean(`${this.colorBackgroundVisible}`)
-                    this.colorBackgroundVisible = false
-                    let element = document.querySelector('.colorBackground')
-                    element.style.opacity = 0;
-                    new SplitImage({
-                        row: 2,
-                        col: 2,
-                        base64: url
+                createImg(base64) {
+                    return new Promise((resolve, reject) => {
+                        const img = new Image()
+                        img.src = base64
+                        img.onload = () => {
+                            this.img = img
+                            this.splitImg()
+                            resolve()
+                        }
+                        img.onerror = (e) => {
+                            ElMessage({
+                                type: 'error',
+                                message: `专辑图片加载错误！错误信息：${e}`,
+                                duration: 0,
+                                showClose: true
+                            })
+                            reject(e)
+                        }
                     })
                 }
-                background(albumCover)
-            } else {
-                colorBackgroundChangeSwitch.disabled = true;
-                ElMessage.error(`专辑获取错误！错误码：${album.status}`)
+                drawImg(options) {
+                    this.canvas.width = this.simpleWidth
+                    this.canvas.height = this.simpleHeight
+                    this.ctx.drawImage(this.img, options.x, options.y, this.simpleWidth, this.simpleHeight, 0, 0, this.simpleWidth, this.simpleHeight)
+                }
+
+                splitImg() {
+                    this.simpleWidth = this.img.width / this.options.col
+                    this.simpleHeight = this.img.height / this.options.row
+                    let i = 0
+                    for (let y = 0; y < this.options.row; y++) {
+                        for (let x = 0; x < this.options.col; x++) {
+                            this.canvas = document.getElementById(`colorBackgroundImage${i}`)
+                            this.ctx = this.canvas.getContext('2d')
+                            this.drawImg({
+                                x: x * this.simpleWidth,
+                                y: y * this.simpleHeight
+                            })
+                            i++;
+                        }
+                    }
+                    that.colorBackgroundVisible = that.oldColorBackgroundVisible
+                    if (that.colorBackgroundVisible) {
+                        let element = document.querySelector('.colorBackground')
+                        element.style.display = 'auto';
+                        setTimeout(() => {
+                            element.style.opacity = 1;
+                        })
+                    }
+                }
             }
+            const background = async url => {
+                this.oldColorBackgroundVisible = Boolean(`${this.colorBackgroundVisible}`)
+                this.colorBackgroundVisible = false
+                let element = document.querySelector('.colorBackground')
+                element.style.opacity = 0;
+                new SplitImage({
+                    row: 2,
+                    col: 2,
+                    base64: url
+                })
+            }
+            background(albumCover)
+            // 专辑封面处理end
             document.querySelector('title').innerText = `${row.name} - 字幕`
             this.play = true;
             let element = document.querySelector('.play')
@@ -487,12 +485,21 @@ export default {
             <p class="footerP">
                 <el-link href="https://www.12377.cn/" target="_blank">中国互联网违法和不良信息举报中心</el-link>
             </p>
+            <p class="footerP" style="display:flex;align-items:center;justify-content: center;">
+                <span style="font-family: 'Noto Serif SC'">字体使用：</span>
+            <ul style="text-align:left;">
+                <li>
+                    <el-link href="https://fonts.google.com/noto/specimen/Noto+Serif+SC" target="_blank"
+                        style="font-family: 'Noto Serif SC'">Noto Serif Simplified Chinese</el-link>
+                </li>
+                <li>
+                    <el-link href="https://fonts.google.com/noto/specimen/Noto+Serif+KR" target="_blank"
+                        style="font-family: 'Noto Serif KR'">Noto Serif Korean</el-link>
+                </li>
+            </ul>
+            </p>
             <p class="footerP">
                 来自青岛，用<span style="color:red;">♥</span>制作
-            </p>
-            <p class="footerP fontHint">
-                <el-link href="https://source.typekit.com/source-han-serif/cn/" target="_blank"
-                    style="font-family: SourceHanSerifCN-Heavy;">字体使用：思源宋体 CN Heavy</el-link>
             </p>
         </footer>
     </div>
@@ -638,16 +645,17 @@ footer {
 
 .lyricList {
     padding: 2vw;
-    font-family: SourceHanSerifCN-Heavy;
-    font-weight: 600;
+    font-family: 'Noto Serif SC', 'Noto Serif KR', serif;
+    font-weight: 900;
     color: white;
     z-index: 20;
     font-size: 8vw;
     -moz-osx-font-smoothing: antialiased;
     -webkit-font-smoothing: antialiased;
 }
+
 /* Safari注音不贴字问题 */
-.safariLyricList > span > ruby > rt{
+.safariLyricList>span>ruby>rt {
     transform: translateY(2vw);
 }
 
@@ -723,7 +731,7 @@ footer {
     top: 0;
     right: 0;
     color: white;
-    line-height: 9vw;
+    line-height: 13vw;
     transition: opacity .5s ease;
     opacity: 0;
     z-index: 20;

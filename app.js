@@ -38,6 +38,7 @@ app.post('/api/search', async (req, res) => {
             if (detail.status === 200) {
                 for (let i = 0; i < result.body.result.songs.length; i++) {
                     result.body.result.songs[i].noCopyrightRcmd = detail.body.songs[i].noCopyrightRcmd === null ? 1 : 0
+                    result.body.result.songs[i].albumCover = detail.body.songs[i].al.picUrl
                 }
             }
         }
@@ -59,6 +60,7 @@ app.post('/api/detail', async (req, res) => {
             let song = detail.body.songs[0]
             song.album = song.al
             song.al=undefined;
+            song.albumCover = song.album.picUrl
             res.json(song)
         }
     } catch (error) {

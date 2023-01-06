@@ -119,7 +119,7 @@ export default {
 </script>
 <template>
     <div class="musicPlayer_container">
-        <img class="musicPlayer_cover" :src="this.song.cover" :alt="song.name" />
+        <img class="musicPlayer_cover" :src="this.song.cover" :alt="`${song.name}的专辑封面`" />
         <div class="musicPlayer_controller">
             <div class="musicPlayer_nameandSound">
                 <span class="musicPlayer_songName">{{ song.name }}</span>
