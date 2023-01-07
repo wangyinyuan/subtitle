@@ -580,6 +580,11 @@
   optionalDependencies:
     "graceful-fs" "^4.1.6"
 
+"kpop@^0.1.2":
+  "integrity" "sha512-eFrVQhm4GjeA/CJI0OzbNFWIJc1oNgbOf8xi4C2lOtLjdtbHKMNsz3c9MdNAhQp67L58KEc8thE3t9eX80AwKw=="
+  "resolved" "https://registry.npmjs.org/kpop/-/kpop-0.1.2.tgz"
+  "version" "0.1.2"
+
 "kuromoji@^0.1.1":
   "integrity" "sha512-V0dUf+C2LpcPEXhoHLMAop/bOht16Dyr+mDiIE39yX3vqau7p80De/koFqpiTcL1zzdZlc3xuHZ8u5gjYRfFaQ=="
   "resolved" "https://registry.npmjs.org/kuromoji/-/kuromoji-0.1.2.tgz"
@@ -618,7 +623,7 @@
   dependencies:
     "p-locate" "^4.1.0"
 
-"lodash@^4.12.0", "lodash@^4.17.14":
+"lodash@^4.17.14":
   "integrity" "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="
   "resolved" "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
   "version" "4.17.21"
@@ -814,13 +819,6 @@
   "integrity" "sha512-ZI3LnwUv5nOGbQzD9c2iDG6toheuXSZP5esSHBjopsXH4dg19soufvpUGA3uohi5anFtGb2lhAVdHzH6R/Evvg=="
   "resolved" "https://registry.npmjs.org/peek-readable/-/peek-readable-4.1.0.tgz"
   "version" "4.1.0"
-
-"pinyin_js@^1.0.4":
-  "integrity" "sha512-W+c53iZyJUz0kNI4ulgA3CW8mwlvUKvNHOYftydsZmThsMi8RMu58wmzIfF0Xtnf+LTV+a/1vTThbxBA0Lgv8w=="
-  "resolved" "https://registry.npmjs.org/pinyin_js/-/pinyin_js-1.0.4.tgz"
-  "version" "1.0.4"
-  dependencies:
-    "lodash" "^4.12.0"
 
 "pinyin-pro@^3.13.0":
   "integrity" "sha512-mwXkm0fbNdyBqWMCkpmPDT3by8nAIROpQBtJPd2zCQtYn/ED2KWe42X7gZ96R7jZz8zPzaWk5yq93BnOOucNNw=="

@@ -1,6 +1,8 @@
 {
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.18.2",
+    "kpop": "^0.1.2",
     "kuroshiro": "~1.1.2",
     "kuroshiro-analyzer-kuromoji": "^1.1.0",
     "NeteaseCloudMusicApi": "^4.8.2",

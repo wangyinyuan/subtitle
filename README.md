@@ -56,9 +56,11 @@
 - 日语注音:[kuroshiro](https://github.com/hexenq/kuroshiro)
 - 粤语注音:[to-jyutping](https://github.com/CanCLID/to-jyutping)
 - 普通话注音:[pinyin-pro](https://github.com/zh-lx/pinyin-pro)
+- 韩语注音:[kpop](https://github.com/AaronO/kpop)
 
 ### 字体
-[思源宋体 CN Heavy](https://source.typekit.com/source-han-serif/cn/)
+- [Noto Serif Simplified Chinese](https://fonts.google.com/noto/specimen/Noto+Serif+SC)
+- [Noto Serif Korean](https://fonts.google.com/noto/specimen/Noto+Serif+KR)
 
 
 

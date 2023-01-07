@@ -36,7 +36,7 @@ export default {
             pinyinOptions: [
                 {
                     value: 'none',
-                    label: '不注音',
+                    label: '不注音'
                 },
                 {
                     value: 'cantonese',
@@ -54,15 +54,20 @@ export default {
                     value: 'jpHiragana',
                     label: '日语(平假名)'
                 },
+                {
+                    value: 'korean',
+                    label: '韩语(罗马字)'
+                }
             ],
             pinyinLyric: {
                 mandarin: [],
                 cantonese: [],
                 jpRoma: [],
-                jpHiragana: []
+                jpHiragana: [],
+                korean: []
             },
             pinyin: 'none',
-            rhythm: false,// 是否进行过节奏判定
+            rhythm: false,
             mp_song: {},
             shareLink: '',
         }
@@ -97,7 +102,6 @@ export default {
             audioSource.connect(analyser);
             analyser.connect(audioContext.destination);
             await audioContext.resume();
-            analyser.fftSize = 256;
             const bufferLength = analyser.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
             let barHeight, all;
@@ -133,7 +137,8 @@ export default {
                 mandarin: [],
                 cantonese: [],
                 jpRoma: [],
-                jpHiragana: []
+                jpHiragana: [],
+                korean: []
             }
             this.pinyin = 'none'
             this.shareLink = ''
@@ -313,6 +318,7 @@ export default {
             document.querySelector('title').innerText = '字幕'
         },
         async pinyinChange(val) {
+            console.log(val,JSON.stringify(this.pinyinLyric[val]))
             if (JSON.stringify(this.pinyinLyric[val]) == '[]' && val !== 'none') {
                 const data = await api(`pinyin/${val}`, { lyric: this.parsedLyric })
                 this.pinyinLyric[val] = data
@@ -652,6 +658,7 @@ footer {
     font-size: 8vw;
     -moz-osx-font-smoothing: antialiased;
     -webkit-font-smoothing: antialiased;
+    white-space:pre-wrap;
 }
 
 /* Safari注音不贴字问题 */
