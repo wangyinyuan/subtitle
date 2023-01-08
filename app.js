@@ -33,7 +33,8 @@ app.post('/api/search', async (req, res) => {
         let result = await search({
             keywords: req.body.keywords,
             type: 1,
-            limit: 10
+            limit: 10,
+            offset: (req.body.pageNum-1)*10
         })
         if (result.body.result.songs) {
             const detail = await song_detail({

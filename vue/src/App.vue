@@ -21,6 +21,7 @@ export default {
     data() {
         return {
             searchData: [],
+            searchDataCache: {},
             searchTableShow: 0,
             lyric: [],
             parsedLyric: [],
@@ -70,16 +71,44 @@ export default {
             rhythm: false,
             mp_song: {},
             shareLink: '',
+            pageNum: 1,
+            hasMoreSongs: true,
+            zishaDialogVisible: false
         }
     },
     methods: {
-        async search() {
+        async search(pageChange) {
+            let PageNum = this.pageNum
+            if (pageChange) {
+                PageNum += pageChange === 'last' ? (-1) : 1
+            } else {
+                PageNum = 1
+            }
             if (this.searchInput) {
-                const data = await api('search', { keywords: this.searchInput });
-                if (data.status === 200) {
-                    this.searchTableShow = 1;
-                    this.searchData = data.body.result.songs || [];
-                    this.loading = false;
+                if (this.searchInput === '自杀') {
+                    this.zishaDialogVisible = true
+                } else {
+                    let data;
+                    if (this.searchDataCache[this.searchInput] && this.searchDataCache[this.searchInput][PageNum]) {
+                        data = this.searchDataCache[this.searchInput][PageNum]
+                    } else {
+                        // 缓存请求数据
+                        data = await api('search', { keywords: this.searchInput, pageNum: PageNum });
+                        if (data.status === 200) {
+                            if (this.searchDataCache[this.searchInput] === undefined) {
+                                this.searchDataCache[this.searchInput] = []
+                            }
+                            this.searchDataCache[this.searchInput][PageNum] = data
+                        }
+                    }
+
+                    if (data.status === 200) {
+                        this.searchTableShow = 1;
+                        this.searchData = data.body.result.songs || [];
+                        this.loading = false;
+                        this.hasMoreSongs = data.body.result.hasMore
+                        this.pageNum = PageNum
+                    }
                 }
             } else {
                 this.searchTableShow = false;
@@ -318,7 +347,7 @@ export default {
             document.querySelector('title').innerText = '字幕'
         },
         async pinyinChange(val) {
-            console.log(val,JSON.stringify(this.pinyinLyric[val]))
+            console.log(val, JSON.stringify(this.pinyinLyric[val]))
             if (JSON.stringify(this.pinyinLyric[val]) == '[]' && val !== 'none') {
                 const data = await api(`pinyin/${val}`, { lyric: this.parsedLyric })
                 this.pinyinLyric[val] = data
@@ -454,14 +483,32 @@ export default {
 }
 </script>
 <template>
+    <el-dialog v-model="zishaDialogVisible" width="30%">
+        <h1>
+            你并不孤单<br/>
+            我们在你身后
+        </h1>
+        <p>
+            如果需要帮助，请拨打全国24小时免费心理咨询热线。
+        </p>
+        <p>
+            全国24小时免费心理咨询<br />
+            010-82951332
+        </p>
+        <template #footer>
+            <span class="dialog-footer">
+                <el-button @click="zishaDialogVisible = false">关闭</el-button>
+            </span>
+        </template>
+    </el-dialog>
     <div class="search">
         <div>
             <img src="/icon/icon.svg" alt="图标" class="searchIcon">
         </div>
         <div class="searchInputGroup">
             <el-input class="searchInput" size="large" v-model="searchInput" placeholder="请输入歌名" clearable
-                @keyup.enter.native="search" />
-            <el-button size="large" @click="search">搜索</el-button>
+                @keyup.enter.native="search(false)" />
+            <el-button size="large" @click="search(false)">搜索</el-button>
         </div>
         <div class="searchData" v-if="searchTableShow">
             <el-table v-loading="loading" class="searchDataTable" :data="searchData" @row-click="subtitle"
@@ -474,6 +521,10 @@ export default {
                 </el-table-column>
                 <el-table-column prop="album.name" label="专辑" />
             </el-table>
+            <div class="pagination">
+                <el-button type="primary" :disabled="pageNum <= 1" @click="this.search('last')">上一页</el-button>
+                <el-button type="primary" :disabled="!hasMoreSongs" @click="this.search('next')">下一页</el-button>
+            </div>
         </div>
         <footer>
             <p class="footerP">高晟捷，版权所有。以MIT协议开源 <el-link href="https://github.com/huangguacucumber/subtitle"
@@ -492,15 +543,15 @@ export default {
                 <el-link href="https://www.12377.cn/" target="_blank">中国互联网违法和不良信息举报中心</el-link>
             </p>
             <p class="footerP" style="display:flex;align-items:center;justify-content: center;">
-                <span style="font-family: 'Noto Serif SC'">字体使用：</span>
+                <span class="noto-serif-sc">字体使用：</span>
             <ul style="text-align:left;">
                 <li>
                     <el-link href="https://fonts.google.com/noto/specimen/Noto+Serif+SC" target="_blank"
-                        style="font-family: 'Noto Serif SC'">Noto Serif Simplified Chinese</el-link>
+                        class="noto-serif-sc">Noto Serif Simplified Chinese</el-link>
                 </li>
                 <li>
                     <el-link href="https://fonts.google.com/noto/specimen/Noto+Serif+KR" target="_blank"
-                        style="font-family: 'Noto Serif KR'">Noto Serif Korean</el-link>
+                        class="noto-serif-kr">Noto Serif Korean</el-link>
                 </li>
             </ul>
             </p>
@@ -574,6 +625,14 @@ export default {
     </div>
 </template>
 <style>
+.noto-serif-sc {
+    font-family: 'Noto Serif SC';
+}
+
+.noto-serif-kr {
+    font-family: 'Noto Serif KR';
+}
+
 #musicPlayerContainer {
     align-items: center;
     border-radius: 40px;
@@ -658,7 +717,7 @@ footer {
     font-size: 8vw;
     -moz-osx-font-smoothing: antialiased;
     -webkit-font-smoothing: antialiased;
-    white-space:pre-wrap;
+    white-space: pre-wrap;
 }
 
 /* Safari注音不贴字问题 */
@@ -747,6 +806,13 @@ footer {
 .searchDataTable {
     width: 100%;
     margin-top: 1vw;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
 }
 
 .searchIcon {
