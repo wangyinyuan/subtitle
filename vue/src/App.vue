@@ -580,7 +580,7 @@ export default {
 
         <div class="lyricList">
             <span v-for="(item, index) in pinyin === 'none' ? parsedLyric : pinyinLyric[pinyin]"
-                v-show="musicTime >= parsedLyric[index].time ? isThisLyric(index) : false"
+                v-show="musicTime + lyricOffset >= parsedLyric[index].time ? isThisLyric(index) : false"
                 v-html="item.lyric"></span>
         </div>
         <div class="playFooter">
