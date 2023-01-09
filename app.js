@@ -15,10 +15,10 @@ kuroshiro.init(kuromojiAnalyzer);
 const kpop = require('kpop')
 
 const app = express();
-/*
+
 const cors = require("cors")
 app.use(cors())
-*/
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '/public')));
 

@@ -1,7 +1,7 @@
 <script>
 import musicPlayer from './components/musicPlayer.vue'
 import copy from 'copy-to-clipboard'
-console.log('望中考顺利！\n\n高晟捷，\n2022年11月5日留。')
+console.log('愿中考顺利！\n\n高晟捷，\n2022年11月5日留。')
 const api = async (name, parm) => {
     let out = {}
     // await fetch('http://localhost:3000/api/' + name, {
@@ -73,7 +73,8 @@ export default {
             shareLink: '',
             pageNum: 1,
             hasMoreSongs: true,
-            zishaDialogVisible: false
+            zishaDialogVisible: false,
+            lyricOffset: 0
         }
     },
     methods: {
@@ -160,6 +161,7 @@ export default {
             if ((row.fee === 1 || row.fee === 4) && row.noCopyrightRcmd === 1) {
                 return;
             }
+            this.lyricOffset = this.showedLyricNum = 0
             this.loading = true
 
             this.pinyinLyric = {
@@ -304,7 +306,7 @@ export default {
         },
         isThisLyric(index) {
             const lyricTime = this.parsedLyric[index].time;
-            const musicTime = this.musicTime
+            const musicTime = this.musicTime + this.lyricOffset
             // 求出下一句时间 解决群青问题
             let i = 1;
             let nextTime = 0;
@@ -485,7 +487,7 @@ export default {
 <template>
     <el-dialog v-model="zishaDialogVisible" width="30%">
         <h1>
-            你并不孤单<br/>
+            你并不孤单<br />
             我们在你身后
         </h1>
         <p>
@@ -578,7 +580,8 @@ export default {
 
         <div class="lyricList">
             <span v-for="(item, index) in pinyin === 'none' ? parsedLyric : pinyinLyric[pinyin]"
-                v-show="isThisLyric(index)" v-html="item.lyric"></span>
+                v-show="musicTime >= parsedLyric[index].time ? isThisLyric(index) : false"
+                v-html="item.lyric"></span>
         </div>
         <div class="playFooter">
             <!-- <div id="musicPlayerContainer"></div> -->
@@ -602,6 +605,12 @@ export default {
                     </span>
                     <template #dropdown>
                         <el-dropdown-menu>
+                            <el-dropdown-item>
+                                <span>歌词提前显示</span>
+                                <div style="width:20px"></div>
+                                <el-slider v-model="lyricOffset" :min="-3" :max="3" :step="0.1"
+                                    :format-tooltip="v => v + ' 秒'" />
+                            </el-dropdown-item>
                             <el-dropdown-item>
                                 <el-switch id="colorBackgroundChangeSwitch" v-model="colorBackgroundVisible"
                                     size="large" active-text="彩色背景" inactive-text="黑色背景" style="width:100%"
@@ -723,10 +732,6 @@ footer {
 /* Safari注音不贴字问题 */
 .safariLyricList>span>ruby>rt {
     transform: translateY(2vw);
-}
-
-.lyricList>span {
-    text-align: left;
 }
 
 .blackBackground {
