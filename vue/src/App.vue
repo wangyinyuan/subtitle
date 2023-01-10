@@ -74,7 +74,8 @@ export default {
             pageNum: 1,
             hasMoreSongs: true,
             zishaDialogVisible: false,
-            lyricOffset: 0
+            lyricOffset: 0,
+            nextLyric: '',
         }
     },
     methods: {
@@ -305,7 +306,7 @@ export default {
             this.musicTime = document.getElementById('music').currentTime;
         },
         isThisLyric(index) {
-            const lyricTime = this.parsedLyric[index].time;
+            const lyricTime = this.parsedLyric[index].time
             const musicTime = this.musicTime + this.lyricOffset
             // 求出下一句时间 解决群青问题
             let i = 1;
@@ -315,6 +316,7 @@ export default {
                 i++
             }
             if (musicTime >= lyricTime && (index === this.parsedLyric.length - 1 || musicTime < nextTime)) {
+                this.nextLyric=this.parsedLyric[index+i-1].lyric
                 return true
             }
             return false
@@ -349,7 +351,6 @@ export default {
             document.querySelector('title').innerText = '字幕'
         },
         async pinyinChange(val) {
-            console.log(val, JSON.stringify(this.pinyinLyric[val]))
             if (JSON.stringify(this.pinyinLyric[val]) == '[]' && val !== 'none') {
                 const data = await api(`pinyin/${val}`, { lyric: this.parsedLyric })
                 this.pinyinLyric[val] = data
@@ -579,10 +580,12 @@ export default {
         </div>
 
         <div class="lyricList">
-            <span v-for="(item, index) in pinyin === 'none' ? parsedLyric : pinyinLyric[pinyin]"
+            <span class="lyric" v-for="(item, index) in pinyin === 'none' ? parsedLyric : pinyinLyric[pinyin]"
                 v-show="musicTime + lyricOffset >= parsedLyric[index].time ? isThisLyric(index) : false"
-                v-html="item.lyric"></span>
+                v-html="item.lyric"></span><br/>
         </div>
+        <span class="nextLyric" v-html="nextLyric"></span>
+
         <div class="playFooter">
             <!-- <div id="musicPlayerContainer"></div> -->
             <musicPlayer :song="mp_song">
@@ -717,21 +720,32 @@ footer {
     border-radius: 15px;
 }
 
-.lyricList {
+.lyricList, .nextLyric {
     padding: 2vw;
     font-family: 'Noto Serif SC', 'Noto Serif KR', serif;
     font-weight: 900;
     color: white;
     z-index: 20;
-    font-size: 8vw;
     -moz-osx-font-smoothing: antialiased;
     -webkit-font-smoothing: antialiased;
     white-space: pre-wrap;
 }
 
+.lyric {
+    font-size: 8vw;
+    line-height: 13vw;
+}
+
 /* Safari注音不贴字问题 */
 .safariLyricList>span>ruby>rt {
     transform: translateY(2vw);
+}
+
+.nextLyric {
+    font-size: 1px;
+    color: rgba(0, 0, 0, 0);
+    position: absolute;
+    bottom: 0;
 }
 
 .blackBackground {
@@ -802,7 +816,6 @@ footer {
     top: 0;
     right: 0;
     color: white;
-    line-height: 13vw;
     transition: opacity .5s ease;
     opacity: 0;
     z-index: 20;
