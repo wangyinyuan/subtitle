@@ -70,11 +70,7 @@ export default {
                         document.msExitFullscreen()
                     }
                 }
-                dom.ontimeupdate = () => {
-                    this.changeAudioTime()
-                    this.progress = parseInt(dom.currentTime / dom.duration * 100)
-                    this.$parent.setMusicTime()
-                }
+                dom.ontimeupdate = this.timeupdate
             } else {
                 dom.pause()
             }
@@ -86,10 +82,16 @@ export default {
                 return `0${num}`
             }
         },
+        timeupdate() {
+            const dom = document.getElementById('music')
+            this.changeAudioTime()
+            this.progress = parseInt(dom.currentTime / dom.duration * 100)
+            this.$parent.musicTime=dom.currentTime
+        },
         newtime(time) {
             return `${this.parseNumber(parseInt(time / 60))}:${this.parseNumber(time - parseInt(time / 60) * 60)}`
         },
-        async changeAudioTime() {
+        changeAudioTime() {
             let dom = document.getElementById('music')
             if (dom !== this.oldEle) {
                 this.progress = 0;
@@ -97,9 +99,9 @@ export default {
                 this.oldEle = dom
             }
             const time = `${this.newtime(parseInt(dom.currentTime))}`
-            this.time=time
+            this.time = time
         },
-        async changeTime() {
+        changeTime() {
             let dom = document.getElementById('music')
             dom.currentTime = this.progress / 100 * dom.duration
         },
@@ -284,7 +286,7 @@ export default {
 }
 
 .musicPlayer_settings {
-    display:flex;
-    gap:5px;
+    display: flex;
+    gap: 5px;
 }
 </style>

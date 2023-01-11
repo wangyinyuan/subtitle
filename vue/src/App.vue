@@ -163,7 +163,7 @@ export default {
             mix2.gain.value = this.karaoke ? 0 : 1;
 
             // create the processor
-            
+
             processor = audioContext.createScriptProcessor(2048 /*bufferSize*/, 2 /*num inputs*/, 1 /*num outputs*/);
 
             // connect everything
@@ -177,7 +177,7 @@ export default {
                     inputR = evt.inputBuffer.getChannelData(1),
                     output = evt.outputBuffer.getChannelData(0),
                     len = inputL.length,
-                    i=0
+                    i = 0
                 for (; i < len; i++) {
                     output[i] = inputL[i] - inputR[i];
                 }
@@ -207,7 +207,7 @@ export default {
             draw();
         },
         karaokeSwitch(value) {
-            if(mix2 && mix){
+            if (mix2 && mix) {
                 mix2.gain.value = value ? 0 : 1;
                 mix.gain.value = value ? 1 : 0;
             }
@@ -362,13 +362,9 @@ export default {
             history.pushState('', '', `${window.location.origin}/?play=${row.id}`);
             this.loading = false;
         },
-        setMusicTime() {
-            this.musicTime = document.getElementById('music').currentTime;
-        },
         isThisLyric(index) {
             const lyricTime = this.parsedLyric[index].time
             const musicTime = this.musicTime + this.lyricOffset
-            // 求出下一句时间 解决群青问题
             let i = 1;
             let nextTime = 0;
             while (nextTime <= lyricTime && index !== this.parsedLyric.length - 1 && (index + i) <= this.parsedLyric.length - 1) {
@@ -505,6 +501,9 @@ export default {
             }).map(value => {
                 // 2.解析歌词
                 return parseLyricLine(value.trim());
+            })
+            lrcObj.sort((a, b)=>{
+                return a.time-b.time
             })
             return lrcObj;
         },
