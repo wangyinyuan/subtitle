@@ -23,6 +23,10 @@
 - 颜色会使用专辑封面的颜色！并不断变换（原理是将封面裁剪成四小块分布在屏幕四角然后旋转）
 - 背景会随着歌曲节奏律动！参考[《基于 Web Audio API 实现音频可视化效果》](https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Audio_API/Visualizations_with_Web_Audio_API)
 
+### 消除人声
+![消除人声](https://postimg.cc/D4V4RcG0)
+- 这个确实没法放到文档里了，自己去[字幕](https://subtitle.gaoshengjie.com)体验一下吧！
+
 ## 灵感
 
 > 一生之中兜兜转转 哪会看清楚 ——李克勤《红日》
@@ -47,6 +51,7 @@
 
 - [Vue.js](https://cn.vuejs.org/)
 - [Element Plus](https://element-plus.gitee.io/zh-CN/)
+- [karaoke](https://github.com/JMPerez/karaoke)
 
 ### 后端
 

@@ -24,7 +24,8 @@ export default {
             sound: 100,
             progress: 0,
             play: false,
-            oldEle: 0
+            oldEle: 0,
+            time: '0:00'
         }
     },
     methods: {
@@ -96,7 +97,7 @@ export default {
                 this.oldEle = dom
             }
             const time = `${this.newtime(parseInt(dom.currentTime))}`
-            document.getElementById('musicPlayer_time').innerText = time
+            this.time=time
         },
         async changeTime() {
             let dom = document.getElementById('music')
@@ -158,7 +159,7 @@ export default {
                     <el-slider class="musicPlayer_progressSlider" v-model="progress" :show-tooltip="false"
                         @input="changeTime" />
                     <div class="musicPlayer_progressNumber">
-                        <span id="musicPlayer_time">0:00</span>
+                        <span id="musicPlayer_time">{{ time }}</span>
                         <div class="musicPlayer_settings">
                             <slot></slot>
                         </div>

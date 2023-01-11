@@ -14,6 +14,14 @@ const api = async (name, parm) => {
     }).then(response => response.json()).then(data => out = data);
     return out;
 }
+
+// karaoke音频处理
+let processor,
+    filterLowPass,
+    filterHighPass,
+    mix,
+    mix2;
+
 export default {
     components: {
         musicPlayer
@@ -76,6 +84,7 @@ export default {
             zishaDialogVisible: false,
             lyricOffset: 0,
             nextLyric: '',
+            karaoke: false
         }
     },
     methods: {
@@ -118,7 +127,7 @@ export default {
         },
         async rhythmBackground() {
             let start = 0
-            const animate = async (height, time) => {
+            const animate = (height, time) => {
                 let now = new Date()
                 if (now - start > time) {
                     document.querySelector('.colorBackgroundContainer').style.transform = `scale(${0.003 * height + 1.2})`
@@ -128,10 +137,55 @@ export default {
             let audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
             let audioSource = audioContext.createMediaElementSource(document.getElementById('music'));
-
             let analyser = audioContext.createAnalyser();
             audioSource.connect(analyser);
-            analyser.connect(audioContext.destination);
+
+            filterLowPass = audioContext.createBiquadFilter();
+            audioSource.connect(filterLowPass);
+
+            filterLowPass.type = 'lowpass';
+            filterLowPass.frequency.value = 120;
+
+            // create high-pass filter
+            filterHighPass = audioContext.createBiquadFilter();
+            audioSource.connect(filterHighPass);
+            filterHighPass.type = 'highpass';
+            filterHighPass.frequency.value = 120;
+
+            // create the gain node
+            mix = audioContext.createGain();
+
+            mix2 = audioContext.createGain();
+            audioSource.connect(mix2);
+            mix2.connect(audioContext.destination);
+
+            mix.gain.value = this.karaoke ? 1 : 0;
+            mix2.gain.value = this.karaoke ? 0 : 1;
+
+            // create the processor
+            
+            processor = audioContext.createScriptProcessor(2048 /*bufferSize*/, 2 /*num inputs*/, 1 /*num outputs*/);
+
+            // connect everything
+            filterHighPass.connect(processor);
+            filterLowPass.connect(mix);
+            processor.connect(mix);
+            mix.connect(audioContext.destination);
+
+            const karaoke = (evt) => {
+                let inputL = evt.inputBuffer.getChannelData(0),
+                    inputR = evt.inputBuffer.getChannelData(1),
+                    output = evt.outputBuffer.getChannelData(0),
+                    len = inputL.length,
+                    i=0
+                for (; i < len; i++) {
+                    output[i] = inputL[i] - inputR[i];
+                }
+            }
+
+            // connect with the karaoke filter
+            processor.onaudioprocess = karaoke;
+
             await audioContext.resume();
             const bufferLength = analyser.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
@@ -151,6 +205,12 @@ export default {
                 requestAnimationFrame(draw);
             }
             draw();
+        },
+        karaokeSwitch(value) {
+            if(mix2 && mix){
+                mix2.gain.value = value ? 0 : 1;
+                mix.gain.value = value ? 1 : 0;
+            }
         },
         async subtitle(r, id, flag) {
             let row = r;
@@ -316,7 +376,7 @@ export default {
                 i++
             }
             if (musicTime >= lyricTime && (index === this.parsedLyric.length - 1 || musicTime < nextTime)) {
-                this.nextLyric=this.parsedLyric[index+i-1].lyric
+                this.nextLyric = this.parsedLyric[index + i - 1].lyric
                 return true
             }
             return false
@@ -582,7 +642,7 @@ export default {
         <div class="lyricList">
             <span class="lyric" v-for="(item, index) in pinyin === 'none' ? parsedLyric : pinyinLyric[pinyin]"
                 v-show="musicTime + lyricOffset >= parsedLyric[index].time ? isThisLyric(index) : false"
-                v-html="item.lyric"></span><br/>
+                v-html="item.lyric"></span><br />
         </div>
         <span class="nextLyric" v-html="nextLyric"></span>
 
@@ -608,6 +668,10 @@ export default {
                     </span>
                     <template #dropdown>
                         <el-dropdown-menu>
+                            <el-dropdown-item style="display:flex;gap:10px">
+                                <span>消除人声</span>
+                                <el-switch v-model="karaoke" size="large" @change="karaokeSwitch" />
+                            </el-dropdown-item>
                             <el-dropdown-item>
                                 <span>歌词提前显示</span>
                                 <div style="width:20px"></div>
@@ -720,7 +784,8 @@ footer {
     border-radius: 15px;
 }
 
-.lyricList, .nextLyric {
+.lyricList,
+.nextLyric {
     padding: 2vw;
     font-family: 'Noto Serif SC', 'Noto Serif KR', serif;
     font-weight: 900;
