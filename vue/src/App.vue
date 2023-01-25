@@ -127,6 +127,7 @@ export default {
         },
         async rhythmBackground() {
             let start = 0
+            // 背景跃动效果
             const animate = (height, time) => {
                 let now = new Date()
                 if (now - start > time) {
