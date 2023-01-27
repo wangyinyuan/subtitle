@@ -262,6 +262,7 @@ export default {
             if (lyric.status === 200) {
                 this.lyric = lyric.body.lrc.lyric;
                 this.parsedLyric = this.parseLyric;
+                console.log(JSON.stringify(this.parsedLyric))
                 // 解决Safari下注音不贴字的问题
                 if (navigator.vendor === "Apple Computer, Inc.") {
                     // 是Apple系
@@ -366,14 +367,11 @@ export default {
         isThisLyric(index) {
             const lyricTime = this.parsedLyric[index].time
             const musicTime = this.musicTime + this.lyricOffset
-            let i = 1;
-            let nextTime = 0;
-            while (nextTime <= lyricTime && index !== this.parsedLyric.length - 1 && (index + i) <= this.parsedLyric.length - 1) {
-                nextTime = this.parsedLyric[index + i].time
-                i++
+            if(index===this.parsedLyric.length-1){
+                return true
             }
-            if (musicTime >= lyricTime && (index === this.parsedLyric.length - 1 || musicTime < nextTime)) {
-                this.nextLyric = this.parsedLyric[index + i - 1].lyric
+            if(musicTime>=lyricTime && musicTime<this.parsedLyric[index+1].time){
+                this.nextLyric=this.parsedLyric[index+1].lyric
                 return true
             }
             return false
