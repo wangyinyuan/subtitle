@@ -262,7 +262,6 @@ export default {
             if (lyric.status === 200) {
                 this.lyric = lyric.body.lrc.lyric;
                 this.parsedLyric = this.parseLyric;
-                console.log(JSON.stringify(this.parsedLyric))
                 // 解决Safari下注音不贴字的问题
                 if (navigator.vendor === "Apple Computer, Inc.") {
                     // 是Apple系
