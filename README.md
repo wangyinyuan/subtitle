@@ -7,7 +7,7 @@
 > 海のまにまに——YOASOBI
 
 ### 为歌词注音
-![为歌词注音](https://i.postimg.cc/T3bvxbqw/image.png)
+![为歌词注音](https://i.postimg.cc/T3bvxbqw/image.png?v=1)
 > 喜欢你——邓紫棋
 
 ### 黑色背景（高对比度）
