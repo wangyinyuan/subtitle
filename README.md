@@ -3,29 +3,34 @@
 ## 功能
 
 ### 显示歌曲歌词
-![显示歌曲歌词](https://i.postimg.cc/G3HfgxvM/7e72c7e6e86e5db62a8f2cd834ff3a8.png/?v=1)
+![显示歌曲歌词](https://i.postimg.cc/Vshqt0nm/image.png)
 > 海のまにまに——YOASOBI
 
 ### 为歌词注音
-![为歌词注音](https://i.postimg.cc/8Cpvsst3/d51b36fe87a42cbe1ec7ed6fd505045.png/?v=1)
+![为歌词注音](https://i.postimg.cc/T3bvxbqw/image.png)
 > 喜欢你——邓紫棋
 
 ### 黑色背景（高对比度）
-![黑色背景（高对比度）](https://i.postimg.cc/jjM8ZD20/d7375f667283f6183ad5561a8b7c703.png)
+![黑色背景（高对比度）](https://i.postimg.cc/LXYbkKCs/image.png)
 > 群青——YOASOBI
 
 ### 音频播放器
-![音频播放器](https://i.postimg.cc/bNFkC1HR/adb347cf06121aab613c0eaa464558b.png)
+![音频播放器](https://i.postimg.cc/LsqcD1hR/image.png)
 > 群青——YOASOBI
 
 ### 彩色背景
-![彩色背景](https://i.postimg.cc/G3HfgxvM/7e72c7e6e86e5db62a8f2cd834ff3a8.png/?v=1)
+![彩色背景](https://i.postimg.cc/Vshqt0nm/image.png)
+> 海のまにまに——YOASOBI
 - 颜色会使用专辑封面的颜色！并不断变换（原理是将封面裁剪成四小块分布在屏幕四角然后旋转）
 - 背景会随着歌曲节奏律动！参考[《基于 Web Audio API 实现音频可视化效果》](https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Audio_API/Visualizations_with_Web_Audio_API)
 
 ### 消除人声
 ![消除人声](https://i.postimg.cc/gjjyXSkV/image.png)
 - 这个确实没法放到文档里了，自己去[字幕](https://subtitle.gaoshengjie.com)体验一下吧！
+
+### 次句提醒
+![次句提醒](https://i.postimg.cc/1XLng6gt/image.png)
+> あの夢をなぞって——YOASOBI
 
 ## 灵感
 

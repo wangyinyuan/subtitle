@@ -83,8 +83,11 @@ export default {
             hasMoreSongs: true,
             zishaDialogVisible: false,
             lyricOffset: 0,
-            nextLyric: '',
-            karaoke: false
+            preloadLyric: '',
+            karaoke: false,
+            lyricAnimation: true,
+            showNextLyric: true,
+            loop: false
         }
     },
     methods: {
@@ -366,14 +369,53 @@ export default {
         isThisLyric(index) {
             const lyricTime = this.parsedLyric[index].time
             const musicTime = this.musicTime + this.lyricOffset
-            if(index===this.parsedLyric.length-1){
-                return true
+            const thisLyricDom = document.getElementById(`lyricDom-${index}`)
+            const showThisLyric = () => {
+                thisLyricDom.style.transform = 'translateY(50%) scale(1)'
+                thisLyricDom.style.bottom = '50%'
+                thisLyricDom.style.color = '#fff'
+                thisLyricDom.style.opacity = '1'
+                thisLyricDom.style.display = 'inline'
             }
-            if(musicTime>=lyricTime && musicTime<this.parsedLyric[index+1].time){
-                this.nextLyric=this.parsedLyric[index+1].lyric
-                return true
+            // 是最后一句歌词
+            if (musicTime >= lyricTime && index === this.parsedLyric.length - 1 && thisLyricDom !== null) {
+                setTimeout(() => {
+                    showThisLyric()
+                }, 0)
+                return true;
             }
-            return false
+            const nextLyricDom = document.getElementById(`lyricDom-${index + 1}`)
+            // 到达当前歌词且当前歌词不是最后一句
+            if (musicTime >= lyricTime && musicTime < this.parsedLyric[index + 1].time && thisLyricDom !== null && nextLyricDom !== null) {
+                setTimeout(() => {
+                    showThisLyric()
+
+                    nextLyricDom.style.bottom = '130px'
+                    nextLyricDom.style.transform = 'scale(.3)'
+                    nextLyricDom.style.color = '#b1b1b1'
+                    nextLyricDom.style.opacity = this.showNextLyric ? '1' : '0'
+                }, 0)
+                this.preloadLyric = this.parsedLyric[index + 2].lyric + this.parsedLyric[index + 3].lyric
+                return true;
+            }
+            // 还没到当前歌词
+            if (musicTime < lyricTime && thisLyricDom !== null && nextLyricDom !== null) {
+                thisLyricDom.style.transform = 'scale(.3)'
+                thisLyricDom.style.color = '#b1b1b1'
+                nextLyricDom.style.bottom = '-30vw'
+                return false;
+            }
+            if (thisLyricDom !== null && nextLyricDom !== null) {
+                setTimeout(() => {
+                    thisLyricDom.style.transform = 'translateY(-50%) scale(1)'
+                    thisLyricDom.style.bottom = '100vh'
+                    thisLyricDom.style.color = '#fff'
+                    thisLyricDom.style.opacity = '0'
+
+                    nextLyricDom.style.bottom = '-30vw'
+                }, 0)
+            }
+            return false;
         },
         back() {
             document.getElementById('music').pause();
@@ -419,6 +461,8 @@ export default {
         },
         backgorundChange(val) {
             let element = document.querySelector('.colorBackground')
+            val=!val
+            this.colorBackgroundVisible=val
             if (val) {
                 element.style.display = 'block';
                 setTimeout(() => {
@@ -459,6 +503,10 @@ export default {
                 message: '复制成功！',
                 type: 'success'
             })
+        },
+        loopChange() {
+            this.loop = !this.loop
+            document.getElementById('music').loop = this.loop
         }
     },
     computed: {
@@ -500,8 +548,8 @@ export default {
                 // 2.解析歌词
                 return parseLyricLine(value.trim());
             })
-            lrcObj.sort((a, b)=>{
-                return a.time-b.time
+            lrcObj.sort((a, b) => {
+                return a.time - b.time
             })
             return lrcObj;
         },
@@ -637,20 +685,39 @@ export default {
         </div>
 
         <div class="lyricList">
-            <span class="lyric" v-for="(item, index) in pinyin === 'none' ? parsedLyric : pinyinLyric[pinyin]"
-                v-show="musicTime + lyricOffset >= parsedLyric[index].time ? isThisLyric(index) : false"
-                v-html="item.lyric"></span><br />
+            <span :class="isThisLyric(index) ? 'lyric' : 'lyric'"
+                v-for="(item, index) in pinyin === 'none' ? parsedLyric : pinyinLyric[pinyin]" v-html="item.lyric"
+                :id="`lyricDom-${index}`"
+                :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'};`"></span><br />
         </div>
-        <span class="nextLyric" v-html="nextLyric"></span>
+        <span class="preloadLyric" v-html="preloadLyric"></span>
 
         <div class="playFooter">
             <!-- <div id="musicPlayerContainer"></div> -->
             <musicPlayer :song="mp_song">
+                <!-- 返回 -->
                 <div class="settings" @click="back">
                     <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;">
                         <path fill="currentColor" d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"></path>
                         <path fill="currentColor"
                             d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z">
+                        </path>
+                    </svg>
+                </div>
+                <!-- 循环 -->
+                <div class="settings" @click="loopChange">
+                    <!-- 循环 -->
+                    <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" v-show="!loop"
+                        style="width:20px;height:20px;">
+                        <path fill="currentColor"
+                            d="M286.95 286.95h450.1v134.61l178.78-178.78L737.05 64v134.61H198.61v269.22h88.34V286.95z m450.1 450.1h-450.1V602.44L108.17 781.22 286.95 960V825.39h538.44V556.17h-88.34v180.88z">
+                        </path>
+                    </svg>
+                    <!-- 不循环 -->
+                    <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" v-show="loop"
+                        style="width:20px;height:20px;">
+                        <path fill="currentColor"
+                            d="M759.14 198.61V64l178.78 178.78-178.78 178.78V286.95H391.06l-90.44-88.34h458.52z m0 357.56h88.34v189.3l-88.34-90.44v-98.86zM86.09 209.13l56.79-56.79 750.87 750.87L836.96 960 702.35 825.39H309.03V960L130.25 781.22l178.78-178.78v134.61H611.9L309.03 434.18v33.65H220.7V343.74L86.09 209.13z">
                         </path>
                     </svg>
                 </div>
@@ -665,20 +732,25 @@ export default {
                     </span>
                     <template #dropdown>
                         <el-dropdown-menu>
-                            <el-dropdown-item style="display:flex;gap:10px">
-                                <span>消除人声</span>
-                                <el-switch v-model="karaoke" size="large" @change="karaokeSwitch" />
-                            </el-dropdown-item>
                             <el-dropdown-item>
                                 <span>歌词提前显示</span>
                                 <div style="width:20px"></div>
                                 <el-slider v-model="lyricOffset" :min="-3" :max="3" :step="0.1"
                                     :format-tooltip="v => v + ' 秒'" />
                             </el-dropdown-item>
+                            <el-dropdown-item style="display:flex;gap:10px">
+                                <el-switch v-model="karaoke" size="large" @change="karaokeSwitch" active-text="消除人声"/>
+                            </el-dropdown-item>
                             <el-dropdown-item>
-                                <el-switch id="colorBackgroundChangeSwitch" v-model="colorBackgroundVisible"
-                                    size="large" active-text="彩色背景" inactive-text="黑色背景" style="width:100%"
-                                    @change="backgorundChange" />
+                                <el-switch id="colorBackgroundChangeSwitch" :value="!colorBackgroundVisible"
+                                    size="large" active-text="高对比度" style="width:100%" @change="backgorundChange" />
+                            </el-dropdown-item>
+                            <el-dropdown-item>
+                                <el-switch v-model="lyricAnimation" size="large" active-text="歌词动画"
+                                    style="width:100%" />
+                            </el-dropdown-item>
+                            <el-dropdown-item>
+                                <el-switch v-model="showNextLyric" size="large" active-text="次句提醒" style="width:100%" />
                             </el-dropdown-item>
                             <el-dropdown-item>
                                 <el-select v-model="pinyin" class="m-2" placeholder="注音" size="large"
@@ -782,7 +854,7 @@ footer {
 }
 
 .lyricList,
-.nextLyric {
+.preloadLyric {
     padding: 2vw;
     font-family: 'Noto Serif SC', 'Noto Serif KR', serif;
     font-weight: 900;
@@ -796,6 +868,15 @@ footer {
 .lyric {
     font-size: 8vw;
     line-height: 13vw;
+    position: absolute;
+    left: 0;
+    width: 100vw;
+    text-align: center;
+    transform-origin: bottom;
+    bottom: -30vw;
+    transition: all .4s ease-in-out;
+    transform: scale(.3);
+    color: #b1b1b1;
 }
 
 /* Safari注音不贴字问题 */
@@ -803,7 +884,7 @@ footer {
     transform: translateY(2vw);
 }
 
-.nextLyric {
+.preloadLyric {
     font-size: 1px;
     color: rgba(0, 0, 0, 0);
     position: absolute;
@@ -881,6 +962,7 @@ footer {
     transition: opacity .5s ease;
     opacity: 0;
     z-index: 20;
+    overflow: hidden;
 }
 
 .searchDataTable {
