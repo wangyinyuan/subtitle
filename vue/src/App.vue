@@ -4,8 +4,8 @@ import copy from 'copy-to-clipboard'
 console.log('愿中考顺利！\n\n高晟捷，\n2022年11月5日留。')
 const api = async (name, parm) => {
     let out = {}
-    // await fetch('http://localhost:3000/api/' + name, {
-    await fetch('/api/' + name, {
+    await fetch('http://localhost:3000/api/' + name, {
+    // await fetch('/api/' + name, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -238,8 +238,7 @@ export default {
             }
             this.pinyin = 'none'
             this.shareLink = ''
-            const colorBackgroundChangeSwitch = document.getElementById('colorBackgroundChangeSwitch')
-            this.animationPlayState = colorBackgroundChangeSwitch.disabled = false
+            this.animationPlayState = false
 
             const promiseLyric = api('lyric', { id: row.id })
             const promiseSongURL = api('songURL', { id: row.id })
@@ -337,13 +336,11 @@ export default {
                         element.style.display = 'auto';
                         setTimeout(() => {
                             element.style.opacity = 1;
-                        })
+                        }, 0)
                     }
                 }
             }
             const background = async url => {
-                this.oldColorBackgroundVisible = Boolean(`${this.colorBackgroundVisible}`)
-                this.colorBackgroundVisible = false
                 let element = document.querySelector('.colorBackground')
                 element.style.opacity = 0;
                 new SplitImage({
@@ -352,6 +349,8 @@ export default {
                     base64: url
                 })
             }
+            this.oldColorBackgroundVisible = (`${this.colorBackgroundVisible}` === 'true')
+            this.colorBackgroundVisible = false
             background(albumCover)
             // 专辑封面处理end
             document.querySelector('title').innerText = `${row.name} - 字幕`
@@ -395,7 +394,18 @@ export default {
                     nextLyricDom.style.color = '#b1b1b1'
                     nextLyricDom.style.opacity = this.showNextLyric ? '1' : '0'
                 }, 0)
-                this.preloadLyric = this.parsedLyric[index + 2].lyric + this.parsedLyric[index + 3].lyric
+                const thirdLyricObj = this.parsedLyric[index + 2]
+                const fourthLyricObj = this.parsedLyric[index + 3]
+                let preloadLyricTemp = ''
+                if (thirdLyricObj !== undefined) {
+                    preloadLyricTemp += thirdLyricObj.lyric
+                }
+                if (fourthLyricObj !== undefined) {
+                    preloadLyricTemp += fourthLyricObj.lyric
+                }
+                if (preloadLyricTemp !== this.preloadLyric) {
+                    this.preloadLyric = preloadLyricTemp
+                }
                 return true;
             }
             // 还没到当前歌词
@@ -459,10 +469,10 @@ export default {
                 return 'vipMusic'
             }
         },
-        backgorundChange(val) {
+        backgroundChange(val) {
             let element = document.querySelector('.colorBackground')
-            val=!val
-            this.colorBackgroundVisible=val
+            val = !val
+            this.colorBackgroundVisible = val
             if (val) {
                 element.style.display = 'block';
                 setTimeout(() => {
@@ -739,11 +749,11 @@ export default {
                                     :format-tooltip="v => v + ' 秒'" />
                             </el-dropdown-item>
                             <el-dropdown-item style="display:flex;gap:10px">
-                                <el-switch v-model="karaoke" size="large" @change="karaokeSwitch" active-text="消除人声"/>
+                                <el-switch v-model="karaoke" size="large" @change="karaokeSwitch" active-text="消除人声" />
                             </el-dropdown-item>
                             <el-dropdown-item>
-                                <el-switch id="colorBackgroundChangeSwitch" :value="!colorBackgroundVisible"
-                                    size="large" active-text="高对比度" style="width:100%" @change="backgorundChange" />
+                                <el-switch :value="!colorBackgroundVisible" size="large" active-text="高对比度"
+                                    style="width:100%" @change="backgroundChange" />
                             </el-dropdown-item>
                             <el-dropdown-item>
                                 <el-switch v-model="lyricAnimation" size="large" active-text="歌词动画"
@@ -870,7 +880,8 @@ footer {
     line-height: 13vw;
     position: absolute;
     left: 0;
-    width: 100vw;
+    width: calc(100vw - 40px);
+    padding: 20px;
     text-align: center;
     transform-origin: bottom;
     bottom: -30vw;
