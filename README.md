@@ -25,8 +25,8 @@
 - 背景会随着歌曲节奏律动！参考[《基于 Web Audio API 实现音频可视化效果》](https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Audio_API/Visualizations_with_Web_Audio_API)
 
 ### 消除人声
-![消除人声](https://i.postimg.cc/gjjyXSkV/image.png)
-- 这个确实没法放到文档里了，自己去[字幕](https://subtitle.gaoshengjie.com)体验一下吧！
+![消除人声](https://i.postimg.cc/4N9gTSTV/K.png)
+- 这个确实没法放到文档里了，自己去[体验](https://subtitle.gaoshengjie.com)一下吧！
 
 ### 次句提醒
 ![次句提醒](https://i.postimg.cc/1XLng6gt/image.png)
