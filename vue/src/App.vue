@@ -206,7 +206,7 @@ export default {
                     audioContext.close()
                     return;
                 }
-                requestAnimationFrame(draw);
+                window.requestAnimationFrame(draw);
             }
             draw();
         },
@@ -334,9 +334,9 @@ export default {
                     if (that.colorBackgroundVisible) {
                         let element = document.querySelector('.colorBackground')
                         element.style.display = 'auto';
-                        setTimeout(() => {
+                        window.requestAnimationFrame(() => {
                             element.style.opacity = 1;
-                        }, 0)
+                        })
                     }
                 }
             }
@@ -358,7 +358,7 @@ export default {
             let element = document.querySelector('.play')
             let element1 = document.querySelector('.search')
             element.style.display = 'flex';
-            setTimeout(() => {
+            window.requestAnimationFrame(() => {
                 element.style.opacity = 1;
                 element1.style.display = 'none';
             })
@@ -378,22 +378,22 @@ export default {
             }
             // 是最后一句歌词
             if (musicTime >= lyricTime && index === this.parsedLyric.length - 1 && thisLyricDom !== null) {
-                setTimeout(() => {
+                window.requestAnimationFrame(() => {
                     showThisLyric()
-                }, 0)
+                })
                 return true;
             }
             const nextLyricDom = document.getElementById(`lyricDom-${index + 1}`)
             // 到达当前歌词且当前歌词不是最后一句
             if (musicTime >= lyricTime && musicTime < this.parsedLyric[index + 1].time && thisLyricDom !== null && nextLyricDom !== null) {
-                setTimeout(() => {
+                window.requestAnimationFrame(() => {
                     showThisLyric()
 
                     nextLyricDom.style.bottom = '130px'
                     nextLyricDom.style.transform = 'scale(.3)'
                     nextLyricDom.style.color = '#b1b1b1'
                     nextLyricDom.style.opacity = this.showNextLyric ? '1' : '0'
-                }, 0)
+                })
                 const thirdLyricObj = this.parsedLyric[index + 2]
                 const fourthLyricObj = this.parsedLyric[index + 3]
                 let preloadLyricTemp = ''
@@ -416,14 +416,14 @@ export default {
                 return false;
             }
             if (thisLyricDom !== null && nextLyricDom !== null) {
-                setTimeout(() => {
+                window.requestAnimationFrame(() => {
                     thisLyricDom.style.transform = 'translateY(-50%) scale(1)'
                     thisLyricDom.style.bottom = '100vh'
                     thisLyricDom.style.color = '#fff'
                     thisLyricDom.style.opacity = '0'
 
                     nextLyricDom.style.bottom = '-30vw'
-                }, 0)
+                })
             }
             return false;
         },
@@ -475,7 +475,7 @@ export default {
             this.colorBackgroundVisible = val
             if (val) {
                 element.style.display = 'block';
-                setTimeout(() => {
+                window.requestAnimationFrame(() => {
                     element.style.opacity = 1;
                 })
             } else {
@@ -683,14 +683,14 @@ export default {
         </div>
         <div class="colorBackground background">
             <div class="colorBackgroundContainer">
-                <canvas class="colorBackgroundImage" v-for="(e, i) in [0, 1, 2, 3]" :id="`colorBackgroundImage${i}`"
-                    :style="`
+                <div v-for="(e, i) in [0, 1, 2, 3]"
+                    :style="`left:0;top:0;transform: translate(${colorBackgroundImage[i].left}px,${colorBackgroundImage[i].top}px);position:absolute;`">
+                    <canvas class="colorBackgroundImage" :id="`colorBackgroundImage${i}`" :style="`
                     width:${colorImageSize[1]}px;
                     height:${colorImageSize[1]}px;
-                    left:${colorBackgroundImage[i].left}px;
-                    top:${colorBackgroundImage[i].top}px;
                     animation-play-state:${animationPlayState ? 'running' : 'paused'}
                     `"></canvas>
+                </div>
             </div>
         </div>
 
