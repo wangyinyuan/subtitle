@@ -86,8 +86,14 @@ export default {
             preloadLyric: '',
             karaoke: false,
             lyricAnimation: true,
+            backgroundAnimation: true,
             showNextLyric: true,
-            loop: false
+            loop: false,
+            lyric1: '',
+            lyric2: '',
+            lyric3: '',
+            lyric4: '',
+            nowLyricId: -1
         }
     },
     methods: {
@@ -195,16 +201,18 @@ export default {
             const dataArray = new Uint8Array(bufferLength);
             let barHeight, all;
             const draw = () => {
-                all = 0
-                analyser.getByteFrequencyData(dataArray);
-                for (let i = 0; i < bufferLength; i++) {
-                    barHeight = dataArray[i];
-                    all += barHeight
-                }
-                animate(all / bufferLength, 410)
-                if (!this.rhythm) {
-                    audioContext.close()
-                    return;
+                if (this.backgroundAnimation) {
+                    all = 0
+                    analyser.getByteFrequencyData(dataArray);
+                    for (let i = 0; i < bufferLength; i++) {
+                        barHeight = dataArray[i];
+                        all += barHeight
+                    }
+                    animate(all / bufferLength, 410)
+                    if (!this.rhythm) {
+                        audioContext.close()
+                        return;
+                    }
                 }
                 window.requestAnimationFrame(draw);
             }
@@ -364,68 +372,86 @@ export default {
             })
             history.pushState('', '', `${window.location.origin}/?play=${row.id}`);
             this.loading = false;
+            this.nowLyricId = -1
+            this.lyric1 = this.lyric2 = this.lyric3 = this.lyric4 = ''
         },
-        isThisLyric(index) {
-            const lyricTime = this.parsedLyric[index].time
+        changeLyric() {
+            const styles = {
+                now: [
+                    ['transform', 'translateY(50%) scale(1)'],
+                    ['bottom', '50%'],
+                    ['opacity', '1']
+                ],
+                next: [
+                    ['transform', 'scale(.3)'],
+                    ['bottom', '130px'],
+                    ['opacity', '.8']
+                ],
+                last: [
+                    ['transform', 'translateY(-50%) scale(1)'],
+                    ['bottom', '100vh'],
+                    ['opacity', '0']
+                ],
+                default: [
+                    ['transform', 'scale(.3)'],
+                    ['bottom', '-30vw'],
+                    ['opacity', '.8']
+                ]
+            }
+
+            const lyricList = this.pinyin === 'none' ? this.parsedLyric : this.pinyinLyric[this.pinyin];
             const musicTime = this.musicTime + this.lyricOffset
-            const thisLyricDom = document.getElementById(`lyricDom-${index}`)
-            const showThisLyric = () => {
-                thisLyricDom.style.transform = 'translateY(50%) scale(1)'
-                thisLyricDom.style.bottom = '50%'
-                thisLyricDom.style.color = '#fff'
-                thisLyricDom.style.opacity = '1'
-                thisLyricDom.style.display = 'inline'
-            }
-            // 是最后一句歌词
-            if (musicTime >= lyricTime && index === this.parsedLyric.length - 1 && thisLyricDom !== null) {
-                window.requestAnimationFrame(() => {
-                    showThisLyric()
-                })
-                return true;
-            }
-            const nextLyricDom = document.getElementById(`lyricDom-${index + 1}`)
-            // 到达当前歌词且当前歌词不是最后一句
-            if (musicTime >= lyricTime && musicTime < this.parsedLyric[index + 1].time && thisLyricDom !== null && nextLyricDom !== null) {
-                window.requestAnimationFrame(() => {
-                    showThisLyric()
-
-                    nextLyricDom.style.bottom = '130px'
-                    nextLyricDom.style.transform = 'scale(.3)'
-                    nextLyricDom.style.color = '#b1b1b1'
-                    nextLyricDom.style.opacity = this.showNextLyric ? '1' : '0'
-                })
-                const thirdLyricObj = this.parsedLyric[index + 2]
-                const fourthLyricObj = this.parsedLyric[index + 3]
-                let preloadLyricTemp = ''
-                if (thirdLyricObj !== undefined) {
-                    preloadLyricTemp += thirdLyricObj.lyric
+            lyricList.forEach((e, index, arr) => {
+                // 是此歌词显示
+                if (musicTime >= e.time && (arr[index + 1] ? arr[index + 1].time > musicTime : true) && this.nowLyricId !== index) {
+                    this.nowLyricId = index
+                    // 当前歌词所在dom编号
+                    const num = 1 + (index + 1) % 4
+                    // 上一歌词所在dom编号
+                    const lastNum = 1 + index % 4
+                    // 下一歌词所在dom编号
+                    const nextNum = 1 + (index + 2) % 4
+                    // 下下句歌词所在dom编号
+                    const thirdNum = 1 + (index + 3) % 4
+                    if (index === 1) {
+                        console.log(num, lastNum, nextNum, thirdNum)
+                    }
+                    this[`lyric${num}`] = e.lyric
+                    // 如果存在上一句
+                    if (index - 1 > 0) {
+                        this[`lyric${lastNum}`] = arr[index - 1].lyric
+                    }
+                    // 如果存在下一句
+                    if (index + 1 < arr.length) {
+                        this[`lyric${nextNum}`] = arr[index + 1].lyric
+                    } else {
+                        this[`lyric${nextNum}`] = ''
+                    }
+                    // 如果存在下下句
+                    if (index + 2 < arr.length) {
+                        this[`lyric${thirdNum}`] = arr[index + 2].lyric
+                    }
+                    window.requestAnimationFrame(() => {
+                        styles.now.forEach(style => {
+                            this.$refs[`lyricDom${num}`].style[style[0]] = style[1]
+                        })
+                        styles.last.forEach(style => {
+                            this.$refs[`lyricDom${lastNum}`].style[style[0]] = style[1]
+                        })
+                        styles.next.forEach(style => {
+                            this.$refs[`lyricDom${nextNum}`].style[style[0]] = style[1]
+                            this.$refs[`lyricDom${nextNum}`].style.opacity=this.showNextLyric?'1':'0'
+                        })
+                        this.$refs[`lyricDom${thirdNum}`].style.transition = 'none'
+                        styles.default.forEach(style => {
+                            this.$refs[`lyricDom${thirdNum}`].style[style[0]] = style[1]
+                        })
+                        setTimeout(() => {
+                            this.$refs[`lyricDom${thirdNum}`].style.transition = `${this.lyricAnimation ? 'all .4s ease-in-out' : 'none'}`
+                        }, 400)
+                    })
                 }
-                if (fourthLyricObj !== undefined) {
-                    preloadLyricTemp += fourthLyricObj.lyric
-                }
-                if (preloadLyricTemp !== this.preloadLyric) {
-                    this.preloadLyric = preloadLyricTemp
-                }
-                return true;
-            }
-            // 还没到当前歌词
-            if (musicTime < lyricTime && thisLyricDom !== null && nextLyricDom !== null) {
-                thisLyricDom.style.transform = 'scale(.3)'
-                thisLyricDom.style.color = '#b1b1b1'
-                nextLyricDom.style.bottom = '-30vw'
-                return false;
-            }
-            if (thisLyricDom !== null && nextLyricDom !== null) {
-                window.requestAnimationFrame(() => {
-                    thisLyricDom.style.transform = 'translateY(-50%) scale(1)'
-                    thisLyricDom.style.bottom = '100vh'
-                    thisLyricDom.style.color = '#fff'
-                    thisLyricDom.style.opacity = '0'
-
-                    nextLyricDom.style.bottom = '-30vw'
-                })
-            }
-            return false;
+            })
         },
         back() {
             document.getElementById('music').pause();
@@ -629,8 +655,8 @@ export default {
             <el-button size="large" @click="search(false)">搜索</el-button>
         </div>
         <div class="searchData" v-if="searchTableShow">
-            <el-table v-loading="loading" class="searchDataTable" :data="searchData" @row-click="subtitle"
-                empty-text="无歌曲" stripe :row-class-name="tableRowClassName">
+            <el-table v-loading="loading" class="searchDataTable" :data="searchData" @row-click="subtitle" empty-text="无歌曲"
+                stripe :row-class-name="tableRowClassName">
                 <el-table-column prop="name" label="歌名" />
                 <el-table-column label="歌手">
                     <template #default="scope">
@@ -685,20 +711,21 @@ export default {
             <div class="colorBackgroundContainer">
                 <div v-for="(e, i) in [0, 1, 2, 3]"
                     :style="`left:0;top:0;transform: translate(${colorBackgroundImage[i].left}px,${colorBackgroundImage[i].top}px);position:absolute;`">
-                    <canvas class="colorBackgroundImage" :id="`colorBackgroundImage${i}`" :style="`
-                    width:${colorImageSize[1]}px;
-                    height:${colorImageSize[1]}px;
-                    animation-play-state:${animationPlayState ? 'running' : 'paused'}
-                    `"></canvas>
+                    <canvas class="colorBackgroundImage" :id="`colorBackgroundImage${i}`"
+                        :style="`width:${colorImageSize[1]}px;height:${colorImageSize[1]}px;animation-play-state:${animationPlayState && backgroundAnimation ? 'running' : 'paused'}`"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="lyricList">
-            <span :class="isThisLyric(index) ? 'lyric' : 'lyric'"
-                v-for="(item, index) in pinyin === 'none' ? parsedLyric : pinyinLyric[pinyin]" v-html="item.lyric"
-                :id="`lyricDom-${index}`"
-                :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'};`"></span><br />
+        <div :class="changeLyric() ? 'lyricList' : 'lyricList'">
+            <span ref="lyricDom1" class="lyric" :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'}`"
+                v-html="lyric1"></span>
+            <span ref="lyricDom2" class="lyric" :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'}`"
+                v-html="lyric2"></span>
+            <span ref="lyricDom3" class="lyric" :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'}`"
+                v-html="lyric3"></span>
+            <span ref="lyricDom4" class="lyric" :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'}`"
+                v-html="lyric4"></span>
         </div>
         <span class="preloadLyric" v-html="preloadLyric"></span>
 
@@ -756,8 +783,11 @@ export default {
                                     style="width:100%" @change="backgroundChange" />
                             </el-dropdown-item>
                             <el-dropdown-item>
-                                <el-switch v-model="lyricAnimation" size="large" active-text="歌词动画"
+                                <el-switch v-model="backgroundAnimation" size="large" active-text="彩色背景动画"
                                     style="width:100%" />
+                            </el-dropdown-item>
+                            <el-dropdown-item>
+                                <el-switch v-model="lyricAnimation" size="large" active-text="歌词动画" style="width:100%" />
                             </el-dropdown-item>
                             <el-dropdown-item>
                                 <el-switch v-model="showNextLyric" size="large" active-text="次句提醒" style="width:100%" />
@@ -887,7 +917,7 @@ footer {
     bottom: -30vw;
     transition: all .4s ease-in-out;
     transform: scale(.3);
-    color: #b1b1b1;
+    color: #fff;
 }
 
 /* Safari注音不贴字问题 */
