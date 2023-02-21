@@ -15,7 +15,7 @@
 > 群青——YOASOBI
 
 ### 音频播放器
-![音频播放器](https://i.postimg.cc/Kvffg7n6/2023-02-21-232245.png?v=1)
+![音频播放器](https://i.postimg.cc/Kvffg7n6/2023-02-21-232245.png?v=2)
 > 群青——YOASOBI
 
 ### 彩色背景
@@ -30,7 +30,7 @@
 - 这个确实没法放到文档里了，自己去[体验](https://subtitle.gaoshengjie.com)一下吧！
 
 ### 次句提醒
-![次句提醒](https://i.postimg.cc/5tsSk84h/2023-02-21-233224.png?v=1)
+![次句提醒](https://i.postimg.cc/5tsSk84h/2023-02-21-233224.png?v=2)
 >　夜に駆ける——YOASOBI
 
 ## 灵感
