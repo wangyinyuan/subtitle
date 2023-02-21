@@ -15,7 +15,7 @@
 > 群青——YOASOBI
 
 ### 音频播放器
-![音频播放器](https://i.postimg.cc/LsqcD1hR/image.png)
+![音频播放器](https://i.postimg.cc/Kvffg7n6/2023-02-21-232245.png)
 > 群青——YOASOBI
 
 ### 彩色背景
@@ -25,12 +25,13 @@
 - 背景会随着歌曲节奏律动！参考[《基于 Web Audio API 实现音频可视化效果》](https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Audio_API/Visualizations_with_Web_Audio_API)
 
 ### 消除人声
-![消除人声](https://i.postimg.cc/4N9gTSTV/K.png?v=1)
+![消除人声](https://i.postimg.cc/4xz8wKhG/2023-02-21-233610.png)
+> K歌之王——陈奕迅
 - 这个确实没法放到文档里了，自己去[体验](https://subtitle.gaoshengjie.com)一下吧！
 
 ### 次句提醒
-![次句提醒](https://i.postimg.cc/1XLng6gt/image.png)
-> あの夢をなぞって——YOASOBI
+![次句提醒](https://i.postimg.cc/5tsSk84h/2023-02-21-233224.png)
+>　夜に駆ける——YOASOBI
 
 ## 灵感
 

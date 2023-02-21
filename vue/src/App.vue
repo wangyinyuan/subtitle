@@ -413,9 +413,6 @@ export default {
                     const nextNum = 1 + (index + 2) % 4
                     // 下下句歌词所在dom编号
                     const thirdNum = 1 + (index + 3) % 4
-                    if (index === 1) {
-                        console.log(num, lastNum, nextNum, thirdNum)
-                    }
                     this[`lyric${num}`] = e.lyric
                     // 如果存在上一句
                     if (index - 1 > 0) {
