@@ -15,7 +15,7 @@
 > 群青——YOASOBI
 
 ### 音频播放器
-![音频播放器](https://i.postimg.cc/Kvffg7n6/2023-02-21-232245.png?v=2)
+![音频播放器](https://i.postimg.cc/Kvffg7n6/2023-02-21-232245.png?v=3)
 > 群青——YOASOBI
 
 ### 彩色背景
