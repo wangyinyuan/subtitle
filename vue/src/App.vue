@@ -83,7 +83,6 @@ export default {
             hasMoreSongs: true,
             zishaDialogVisible: false,
             lyricOffset: 0,
-            preloadLyric: '',
             karaoke: false,
             lyricAnimation: true,
             backgroundAnimation: true,
@@ -378,24 +377,20 @@ export default {
         changeLyric() {
             const styles = {
                 now: [
-                    ['transform', 'translateY(50%) scale(1)'],
-                    ['bottom', '50%'],
+                    ['transform', 'translateY(-50%) scale(1)'],
                     ['opacity', '1']
                 ],
                 next: [
-                    ['transform', 'scale(.3)'],
-                    ['bottom', '130px'],
-                    ['opacity', '.8']
+                    ['transform', 'translateY(calc(50vh - 130px - 100%)) scale(.3)'],
+                    ['opacity', '.5']
                 ],
                 last: [
-                    ['transform', 'translateY(-50%) scale(1)'],
-                    ['bottom', '100vh'],
+                    ['transform', 'translateY(calc(-50vh - 100%)) scale(1)'],
                     ['opacity', '0']
                 ],
                 default: [
-                    ['transform', 'scale(.3)'],
-                    ['bottom', '-30vw'],
-                    ['opacity', '.8']
+                    ['transform', 'translateY(calc(100vh - 100%)) scale(.3)'],
+                    ['opacity', '.5']
                 ]
             }
 
@@ -435,10 +430,10 @@ export default {
                         styles.last.forEach(style => {
                             this.$refs[`lyricDom${lastNum}`].style[style[0]] = style[1]
                         })
-                        styles.next.forEach(style => {
-                            this.$refs[`lyricDom${nextNum}`].style[style[0]] = style[1]
-                            this.$refs[`lyricDom${nextNum}`].style.opacity=this.showNextLyric?'1':'0'
-                        })
+
+                        this.$refs[`lyricDom${nextNum}`].style.transform = styles.next[0][1]
+                        this.$refs[`lyricDom${nextNum}`].style.opacity=this.showNextLyric?styles.next[1][1]:'0'
+
                         this.$refs[`lyricDom${thirdNum}`].style.transition = 'none'
                         styles.default.forEach(style => {
                             this.$refs[`lyricDom${thirdNum}`].style[style[0]] = style[1]
@@ -724,8 +719,7 @@ export default {
             <span ref="lyricDom4" class="lyric" :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'}`"
                 v-html="lyric4"></span>
         </div>
-        <span class="preloadLyric" v-html="preloadLyric"></span>
-
+        
         <div class="playFooter">
             <!-- <div id="musicPlayerContainer"></div> -->
             <musicPlayer :song="mp_song">
@@ -911,9 +905,10 @@ footer {
     padding: 20px;
     text-align: center;
     transform-origin: bottom;
-    bottom: -30vw;
     transition: all .4s ease-in-out;
-    transform: scale(.3);
+    top:50%;
+    transform: translateY(calc(100vh - 100%)) scale(.3);
+    opacity: .5;
     color: #fff;
 }
 

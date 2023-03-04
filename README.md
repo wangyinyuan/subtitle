@@ -25,12 +25,12 @@
 - 背景会随着歌曲节奏律动！参考[《基于 Web Audio API 实现音频可视化效果》](https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Audio_API/Visualizations_with_Web_Audio_API)
 
 ### 消除人声
-![消除人声](https://i.postimg.cc/4xz8wKhG/2023-02-21-233610.png)
-> K歌之王——陈奕迅
+![消除人声](https://i.postimg.cc/MGTXgq3H/image.png)
+> 小半——陈粒
 - 这个确实没法放到文档里了，自己去[体验](https://subtitle.gaoshengjie.com)一下吧！
 
 ### 次句提醒
-![次句提醒](https://i.postimg.cc/5tsSk84h/2023-02-21-233224.png?v=2)
+![次句提醒](https://i.postimg.cc/wMKX67n0/image.png)
 >　夜に駆ける——YOASOBI
 
 ## 灵感
