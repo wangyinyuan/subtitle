@@ -4,8 +4,8 @@ import copy from 'copy-to-clipboard'
 console.log('愿中考顺利！\n\n高晟捷，\n2022年11月5日留。')
 const api = async (name, parm) => {
     let out = {}
-    // await fetch('http://localhost:3000/api/' + name, {
-    await fetch('/api/' + name, {
+    await fetch('http://localhost:3000/api/' + name, {
+        // await fetch('/api/' + name, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -88,11 +88,9 @@ export default {
             backgroundAnimation: true,
             showNextLyric: true,
             loop: false,
-            lyric1: '',
-            lyric2: '',
-            lyric3: '',
-            lyric4: '',
-            nowLyricId: -1
+            mainLyric1: '',
+            mainLyric2: '',
+            mainLyric3: ''
         }
     },
     methods: {
@@ -376,71 +374,76 @@ export default {
         },
         changeLyric() {
             const styles = {
-                now: [
-                    ['transform', 'translateY(-50%) scale(1)'],
-                    ['opacity', '1']
-                ],
-                next: [
-                    ['transform', 'translateY(calc(50vh - 130px - 100%)) scale(.3)'],
-                    ['opacity', '.5']
-                ],
-                last: [
-                    ['transform', 'translateY(calc(-50vh - 100%)) scale(1)'],
-                    ['opacity', '0']
-                ],
-                default: [
-                    ['transform', 'translateY(calc(100vh - 100%)) scale(.3)'],
-                    ['opacity', '.5']
-                ]
+                main: {
+                    last: [
+                        ['transform', 'translateY(-50%) scale(1)'],
+                        ['opacity', '0']
+                    ],
+                    now: [
+                        ['transform', 'translateY(-50%) scale(1)'],
+                        ['opacity', '1']
+                    ],
+                    next: [
+                        ['transform', 'translateY(-50%) scale(1)'],
+                        ['opacity', '0']
+                    ]
+                },
+                sub: {
+                    last: [
+                        ['transform', 'translateY(calc(50vh - 130px - 100%)) scale(.3)'],
+                        ['opacity', '0']
+                    ],
+                    now: [
+                        ['transform', 'translateY(calc(50vh - 130px - 100%)) scale(.3)'],
+                        ['opacity', this.showNextLyric?'.5':'0']
+                    ],
+                    next: [
+                        ['transform', 'translateY(calc(50vh - 130px - 100%)) scale(.3)'],
+                        ['opacity', '0']
+                    ]
+                }
             }
-
             const lyricList = this.pinyin === 'none' ? this.parsedLyric : this.pinyinLyric[this.pinyin];
             const musicTime = this.musicTime + this.lyricOffset
             lyricList.forEach((e, index, arr) => {
-                // 是此歌词显示
-                if (musicTime >= e.time && (arr[index + 1] ? arr[index + 1].time > musicTime : true) && this.nowLyricId !== index) {
-                    this.nowLyricId = index
-                    // 当前歌词所在dom编号
-                    const num = 1 + (index + 1) % 4
-                    // 上一歌词所在dom编号
-                    const lastNum = 1 + index % 4
-                    // 下一歌词所在dom编号
-                    const nextNum = 1 + (index + 2) % 4
-                    // 下下句歌词所在dom编号
-                    const thirdNum = 1 + (index + 3) % 4
-                    this[`lyric${num}`] = e.lyric
+                if (musicTime >= e.time && (arr[index + 1] ? arr[index + 1].time > musicTime : true)) {
+                    // 当前歌词所在的dom编号
+                    const nowDomNum = 1 + (index + 1) % 3
+                    // 上一歌词所在的dom编号
+                    const lastDomNum = 1 + index % 3
+                    // 下一歌词所在的dom编号
+                    const nextDomNum = 1 + (index + 2) % 3
+                    this[`mainLyric${nowDomNum}`] = e.lyric
                     // 如果存在上一句
                     if (index - 1 > 0) {
-                        this[`lyric${lastNum}`] = arr[index - 1].lyric
+                        this[`mainLyric${lastDomNum}`] = arr[index - 1].lyric
                     }
                     // 如果存在下一句
-                    if (index + 1 < arr.length) {
-                        this[`lyric${nextNum}`] = arr[index + 1].lyric
-                    } else {
-                        this[`lyric${nextNum}`] = ''
-                    }
-                    // 如果存在下下句
-                    if (index + 2 < arr.length) {
-                        this[`lyric${thirdNum}`] = arr[index + 2].lyric
+                    if (index + 1 <= arr.length - 1) {
+                        this[`mainLyric${nextDomNum}`] = arr[index + 1].lyric
+                    }else{
+                        this[`mainLyric${nextDomNum}`] = ''
                     }
                     window.requestAnimationFrame(() => {
-                        styles.now.forEach(style => {
-                            this.$refs[`lyricDom${num}`].style[style[0]] = style[1]
+                        styles.main.now.forEach(style => {
+                            this.$refs[`mainLyricDom${nowDomNum}`].style[style[0]] = style[1]
                         })
-                        styles.last.forEach(style => {
-                            this.$refs[`lyricDom${lastNum}`].style[style[0]] = style[1]
+                        styles.main.last.forEach(style => {
+                            this.$refs[`mainLyricDom${lastDomNum}`].style[style[0]] = style[1]
+                        })
+                        styles.main.next.forEach(style => {
+                            this.$refs[`mainLyricDom${nextDomNum}`].style[style[0]] = style[1]
                         })
 
-                        this.$refs[`lyricDom${nextNum}`].style.transform = styles.next[0][1]
-                        this.$refs[`lyricDom${nextNum}`].style.opacity=this.showNextLyric?styles.next[1][1]:'0'
-
-                        this.$refs[`lyricDom${thirdNum}`].style.transition = 'none'
-                        styles.default.forEach(style => {
-                            this.$refs[`lyricDom${thirdNum}`].style[style[0]] = style[1]
+                        styles.sub.now.forEach(style => {
+                            this.$refs[`subLyricDom${nowDomNum}`].style[style[0]] = style[1]
                         })
-                        setTimeout(() => {
-                            this.$refs[`lyricDom${thirdNum}`].style.transition = `${this.lyricAnimation ? 'all .4s ease-in-out' : 'none'}`
-                        }, 400)
+                        styles.sub.last.forEach(style => {
+                            this.$refs[`subLyricDom${lastDomNum}`].style[style[0]] = style[1]
+                        })
+                        styles.sub.next.forEach(style => {
+                            this.$refs[`subLyricDom${nextDomNum}`].style[style[0]] = style[1]
+                        })
                     })
                 }
             })
@@ -505,26 +508,7 @@ export default {
         },
         async clipLink() {
             if (this.shareLink === '') {
-                await fetch('https://ceek.fun/create', {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        url: window.location.href
-                    })
-                }).then(response => response.json()).then(data => {
-                    if (data.code) {
-                        this.shareLink = `https://ceek.fun/${data.url}`
-                    } else {
-                        ElMessage({
-                            message: `复制失败：请求短网址API错误！错误信息：${data.msg}`,
-                            type: 'error',
-                            duration: 0,
-                            showClose: true
-                        })
-                    }
-                });
+                this.shareLink = window.location.href
             }
             copy(this.shareLink)
             ElMessage({
@@ -710,16 +694,29 @@ export default {
         </div>
 
         <div :class="changeLyric() ? 'lyricList' : 'lyricList'">
-            <span ref="lyricDom1" class="lyric" :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'}`"
-                v-html="lyric1"></span>
-            <span ref="lyricDom2" class="lyric" :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'}`"
-                v-html="lyric2"></span>
-            <span ref="lyricDom3" class="lyric" :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'}`"
-                v-html="lyric3"></span>
-            <span ref="lyricDom4" class="lyric" :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'}`"
-                v-html="lyric4"></span>
+            <!-- <span ref="lyricDom1" class="lyric" :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'}`"
+                                    v-html="lyric1"></span>
+                                <span ref="lyricDom2" class="lyric" :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'}`"
+                                    v-html="lyric2"></span>
+                                <span ref="lyricDom3" class="lyric" :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'}`"
+                                    v-html="lyric3"></span>
+                                <span ref="lyricDom4" class="lyric" :style="`transition: ${lyricAnimation ? 'all .4s ease-in-out' : 'none'}`"
+                                    v-html="lyric4"></span> -->
+            <span ref="mainLyricDom1" class="lyric"
+                :style="`transition: ${lyricAnimation ? 'all .4s ease-out' : 'none'}`" v-html="mainLyric1"></span>
+            <span ref="mainLyricDom2" class="lyric"
+                :style="`transition: ${lyricAnimation ? 'all .4s ease-out' : 'none'}`" v-html="mainLyric2"></span>
+            <span ref="mainLyricDom3" class="lyric"
+                :style="`transition: ${lyricAnimation ? 'all .4s ease-out' : 'none'}`" v-html="mainLyric3"></span>
+
+            <span ref="subLyricDom1" class="lyric"
+                :style="`transition: ${lyricAnimation ? 'all .4s ease-out' : 'none'}`" v-html="mainLyric2"></span>
+            <span ref="subLyricDom2" class="lyric"
+                :style="`transition: ${lyricAnimation ? 'all .4s ease-out' : 'none'}`" v-html="mainLyric3"></span>
+            <span ref="subLyricDom3" class="lyric"
+                :style="`transition: ${lyricAnimation ? 'all .4s ease-out' : 'none'}`" v-html="mainLyric1"></span>
         </div>
-        
+
         <div class="playFooter">
             <!-- <div id="musicPlayerContainer"></div> -->
             <musicPlayer :song="mp_song">
@@ -893,7 +890,7 @@ footer {
     z-index: 20;
     -moz-osx-font-smoothing: antialiased;
     -webkit-font-smoothing: antialiased;
-    white-space: pre-wrap;
+    white-space: normal;
 }
 
 .lyric {
@@ -905,9 +902,9 @@ footer {
     padding: 20px;
     text-align: center;
     transform-origin: bottom;
-    transition: all .4s ease-in-out;
-    top:50%;
-    transform: translateY(calc(100vh - 100%)) scale(.3);
+    transition: all .3s ease-in-out;
+    top: 50%;
+    /* transform: translateY(calc(100vh - 100%)) scale(.3); */
     opacity: .5;
     color: #fff;
 }

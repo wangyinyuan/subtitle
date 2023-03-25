@@ -31,7 +31,7 @@
 
 ### 次句提醒
 ![次句提醒](https://i.postimg.cc/wMKX67n0/image.png)
->　夜に駆ける——YOASOBI
+> 夜に駆ける——YOASOBI
 
 ## 灵感
 
